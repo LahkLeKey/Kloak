@@ -37,8 +37,7 @@ export class InMemoryKeycloakClient implements KeycloakClient {
     const liveState = await this.readLiveState(deployment);
     if (liveState.realmName !== desiredState.realmName) {
       throw new Error(
-          `Keycloak realm ${liveState.realmName} does not match desired realm ${
-              desiredState.realmName}.`);
+          `Keycloak realm ${liveState.realmName} does not match desired realm ${desiredState.realmName}.`);
     }
   }
 }
