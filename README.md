@@ -1,2 +1,2 @@
 # Kloak
-A Reusable Standardized Authentication Flow
+Kloak manages Keycloak deployments.
