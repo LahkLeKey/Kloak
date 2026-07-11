@@ -1,4 +1,4 @@
-import type {ProvisioningTarget} from '../shared';
+import type {ProvisioningReferences, ProvisioningTarget} from '../shared';
 
 export interface ProvisioningPlan {
   readonly target: ProvisioningTarget;
@@ -10,7 +10,7 @@ export interface ProvisioningPlan {
 
 export interface ProvisioningResult {
   readonly target: ProvisioningTarget;
-  readonly externalReferences: Record<string, string>;
+  readonly externalReferences: ProvisioningReferences;
 }
 
 export interface InfrastructureService {
