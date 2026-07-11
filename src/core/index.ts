@@ -1,4 +1,4 @@
-import type {AuditEvent, CustomerId, Deployment, DeploymentId, DeploymentStatus, DeploymentVersion, DeploymentVersionId, DesiredStateSnapshot, ProvisioningTarget, ReconciliationRun,} from '../shared';
+import type {AuditEvent, CustomerId, Deployment, DeploymentId, DeploymentStatus, DeploymentVersion, DeploymentVersionId, DesiredStateSnapshot, ProvisioningReferences, ProvisioningTarget, ReconciliationRun,} from '../shared';
 
 export interface CreateDeploymentInput {
   readonly customerId: CustomerId;
@@ -36,6 +36,9 @@ export interface CoreApi {
   getDeployment(deploymentId: DeploymentId): Promise<Deployment|null>;
   listDeployments(): Promise<readonly Deployment[]>;
   recordReconciliationRun(run: ReconciliationRun): Promise<void>;
+  recordProvisioningReferences(
+      deploymentId: DeploymentId,
+      references: ProvisioningReferences): Promise<void>;
   appendAuditEvent(event: AuditEvent): Promise<void>;
 }
 
@@ -179,6 +182,21 @@ export class CoreService implements CoreApi {
 
   async recordReconciliationRun(run: ReconciliationRun): Promise<void> {
     await this.repository.recordReconciliationRun(run);
+  }
+
+  async recordProvisioningReferences(
+      deploymentId: DeploymentId,
+      references: ProvisioningReferences): Promise<void> {
+    const deployment = await this.repository.getDeployment(deploymentId);
+    if (deployment === null) {
+      throw new Error(`Deployment ${deploymentId} does not exist.`);
+    }
+
+    await this.repository.saveDeployment({
+      ...deployment,
+      provisioningReferences: references,
+      updatedAt: new Date().toISOString(),
+    });
   }
 
   async appendAuditEvent(event: AuditEvent): Promise<void> {

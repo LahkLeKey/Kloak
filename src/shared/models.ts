@@ -67,6 +67,7 @@ export interface Deployment {
   readonly target: ProvisioningTarget;
   readonly currentVersionId?: DeploymentVersionId;
   readonly desiredVersionId?: DeploymentVersionId;
+  readonly provisioningReferences?: ProvisioningReferences;
   readonly status: DeploymentStatus;
   readonly createdAt: string;
   readonly updatedAt: string;

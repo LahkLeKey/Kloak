@@ -25,6 +25,10 @@ When set to `yes`, PRs run through the same labels and states as issues, using t
 
 GitHub shares one number space across issues and PRs, so a bare `#42` may be either — resolve with `gh pr view 42` and fall back to `gh issue view 42`.
 
+### Copilot review patching
+
+When a Copilot review leaves a comment or review thread that needs to be amended, patch it with `gh` instead of creating a new thread. Use `gh pr view <number> --comments` to locate the review thread, then use `gh api` to update the underlying PR review comment or review record as needed. Keep the original discussion thread intact unless the review itself is being withdrawn.
+
 ## When a skill says "publish to the issue tracker"
 
 Create a GitHub issue.
