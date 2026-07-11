@@ -56,8 +56,9 @@ export interface DesiredStateSnapshot {
   readonly infrastructure: InfrastructureDesiredState;
 }
 
-export type DeploymentStatus =|'draft'|'provisioning'|'healthy'|'drifted'|
-    'repairing'|'failed'|'decommissioned';
+export type DeploymentStatus =
+  'draft'|'provisioning'|'healthy'|'drifted'|'repairing'|'failed'|
+  'decommissioned';
 
 export interface Deployment {
   readonly id: DeploymentId;

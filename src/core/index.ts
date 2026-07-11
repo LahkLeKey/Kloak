@@ -127,8 +127,18 @@ export class CoreService implements CoreApi {
       createdAt: new Date().toISOString(),
     };
 
-    await this.repository.saveDeploymentVersion(version);
-    await this.repository.recordDesiredState(input.snapshot);
+    const normalizedSnapshot = {
+      ...input.snapshot,
+      versionId: version.id,
+    };
+
+    const persistedVersion: DeploymentVersion = {
+      ...version,
+      snapshot: normalizedSnapshot,
+    };
+
+    await this.repository.saveDeploymentVersion(persistedVersion);
+    await this.repository.recordDesiredState(normalizedSnapshot);
 
     await this.repository.saveDeployment({
       ...deployment,
@@ -138,7 +148,7 @@ export class CoreService implements CoreApi {
       updatedAt: new Date().toISOString(),
     });
 
-    return version;
+    return persistedVersion;
   }
 
   async markDeploymentStatus(
