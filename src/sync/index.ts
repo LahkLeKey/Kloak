@@ -50,6 +50,10 @@ export class SyncService {
         await this.dependencies.infrastructure.readLiveState(deployment.target);
     const findings = diffDesiredState(
         desiredState, keycloakLiveState, infrastructureLiveState);
+    const keycloakFindings = findings.filter(
+      (finding) => finding.scope === 'keycloak');
+    const infrastructureFindings = findings.filter(
+      (finding) => finding.scope === 'infrastructure');
 
     if (findings.length === 0) {
       const run: ReconciliationRun = {
@@ -67,25 +71,74 @@ export class SyncService {
       return run;
     }
 
+    if (keycloakFindings.length === 0) {
+      const failedRun: ReconciliationRun = {
+        id: crypto.randomUUID(),
+        deploymentId,
+        versionId: desiredState.versionId,
+        startedAt,
+        finishedAt: this.now().toISOString(),
+        status: 'failed',
+        findings,
+      };
+
+      await this.dependencies.repository.recordReconciliationRun(failedRun);
+      await this.persistDeploymentStatus(deployment, 'drifted');
+      return failedRun;
+    }
+
     await this.persistDeploymentStatus(deployment, 'repairing');
-    await this.dependencies.keycloak.applyDesiredState(
-        deployment, desiredState.keycloak);
-    await this.dependencies.keycloak.verifyLiveState(
-        deployment, desiredState.keycloak);
 
-    const completedRun: ReconciliationRun = {
-      id: crypto.randomUUID(),
-      deploymentId,
-      versionId: desiredState.versionId,
-      startedAt,
-      finishedAt: this.now().toISOString(),
-      status: 'repaired',
-      findings,
-    };
+    try {
+      await this.dependencies.keycloak.applyDesiredState(
+          deployment, desiredState.keycloak);
+      await this.dependencies.keycloak.verifyLiveState(
+          deployment, desiredState.keycloak);
 
-    await this.dependencies.repository.recordReconciliationRun(completedRun);
-    await this.persistDeploymentStatus(deployment, 'healthy');
-    return completedRun;
+      if (infrastructureFindings.length > 0) {
+        const driftedRun: ReconciliationRun = {
+          id: crypto.randomUUID(),
+          deploymentId,
+          versionId: desiredState.versionId,
+          startedAt,
+          finishedAt: this.now().toISOString(),
+          status: 'failed',
+          findings,
+        };
+
+        await this.dependencies.repository.recordReconciliationRun(driftedRun);
+        await this.persistDeploymentStatus(deployment, 'drifted');
+        return driftedRun;
+      }
+
+      const completedRun: ReconciliationRun = {
+        id: crypto.randomUUID(),
+        deploymentId,
+        versionId: desiredState.versionId,
+        startedAt,
+        finishedAt: this.now().toISOString(),
+        status: 'repaired',
+        findings,
+      };
+
+      await this.dependencies.repository.recordReconciliationRun(completedRun);
+      await this.persistDeploymentStatus(deployment, 'healthy');
+      return completedRun;
+    } catch {
+      const failedRun: ReconciliationRun = {
+        id: crypto.randomUUID(),
+        deploymentId,
+        versionId: desiredState.versionId,
+        startedAt,
+        finishedAt: this.now().toISOString(),
+        status: 'failed',
+        findings,
+      };
+
+      await this.dependencies.repository.recordReconciliationRun(failedRun);
+      await this.persistDeploymentStatus(deployment, 'drifted');
+      return failedRun;
+    }
   }
 
   private async requireDeployment(deploymentId: DeploymentId):
@@ -152,8 +205,9 @@ export function diffDesiredState(
     });
   }
 
-  if (desiredState.infrastructure.ingressHosts.length !==
-      infrastructureLiveState.ingressHosts.length) {
+  if (!sameStringSet(
+          desiredState.infrastructure.ingressHosts,
+          infrastructureLiveState.ingressHosts)) {
     findings.push({
       scope: 'infrastructure',
       path: 'ingressHosts',
@@ -165,3 +219,18 @@ export function diffDesiredState(
 
   return findings;
 }
+
+function sameStringSet(
+    left: readonly string[], right: readonly string[]): boolean {
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  const normalizedLeft = [...left].sort();
+  const normalizedRight = [...right].sort();
+
+  return normalizedLeft.every(
+      (value, index) => value === normalizedRight[index]);
+}
+
+export * from './fakes';
