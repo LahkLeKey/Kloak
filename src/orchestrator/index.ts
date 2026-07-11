@@ -36,7 +36,8 @@ export class DeploymentService {
   }
 
   async deploy(input: Input): Promise<Result> {
-    if (!sameTarget(input.createDeployment.target, input.provisioningPlan.target)) {
+    if (!sameTarget(
+            input.createDeployment.target, input.provisioningPlan.target)) {
       throw new Error('Deployment target and provisioning target must match.');
     }
 
@@ -66,7 +67,9 @@ export class DeploymentService {
   }
 }
 
-function sameTarget(left: ProvisioningPlan['target'], right: ProvisioningPlan['target']): boolean {
+function sameTarget(
+    left: ProvisioningPlan['target'],
+    right: ProvisioningPlan['target']): boolean {
   return left.cloudProvider === right.cloudProvider &&
       left.accountId === right.accountId &&
       left.projectId === right.projectId &&
