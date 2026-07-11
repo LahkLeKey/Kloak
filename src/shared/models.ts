@@ -112,3 +112,5 @@ export interface AuditEvent {
   readonly payload: Record<string, unknown>;
   readonly at: string;
 }
+
+export type ProvisioningReferences = Record<string, string>;
