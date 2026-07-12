@@ -3,6 +3,7 @@ import {createServer} from 'node:http';
 
 import {CoreService} from '../core/index.ts';
 import {InMemoryDeploymentRepository} from '../core/index.ts';
+import {SqlDeploymentRepository, runMigrations} from '../database/index.ts';
 import type {HttpMethod, HttpRequest, HttpResponse} from './handler.ts';
 import {AdminHandler} from './handler.ts';
 
@@ -66,7 +67,20 @@ async function readBody(req: NodeJS.ReadableStream): Promise<unknown> {
 }
 
 export async function startServer(config: ServerConfig): Promise<Server> {
-  const repository = new InMemoryDeploymentRepository();
+  // Initialize repository (PostgreSQL if DATABASE_URL is set, otherwise in-memory)
+  let repository;
+  const databaseUrl = process.env.DATABASE_URL;
+
+  if (databaseUrl) {
+    console.log('Initializing PostgreSQL repository...');
+    await runMigrations(databaseUrl);
+    repository = new SqlDeploymentRepository({connectionString: databaseUrl});
+    console.log('✓ PostgreSQL repository initialized');
+  } else {
+    console.log('Using in-memory repository (set DATABASE_URL to use PostgreSQL)');
+    repository = new InMemoryDeploymentRepository();
+  }
+
   const core = new CoreService(repository);
   const handler = new AdminHandler(core);
 

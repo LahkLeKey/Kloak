@@ -11,14 +11,31 @@ This package provides the HTTP API server for Kloak deployments.
 
 ## Starting the Server
 
+### In-memory mode (default, for local development without persistence)
+
 ```bash
-node --experimental-transform-types src/admin-ui/cli.ts
+npm run dev
+# or
+PORT=3000 node --experimental-transform-types src/admin-ui/cli.ts
+```
+
+### PostgreSQL mode (persistent deployments)
+
+```bash
+# Run migrations and start server
+DATABASE_URL=postgresql://user:password@localhost/kloak npm run dev
+
+# Or manually:
+npm run migrate
+DATABASE_URL=postgresql://user:password@localhost/kloak node --experimental-transform-types src/admin-ui/cli.ts
 ```
 
 Set port and host via environment variables:
 ```bash
-PORT=3000 HOST=localhost node --experimental-transform-types src/admin-ui/cli.ts
+PORT=3000 HOST=0.0.0.0 DATABASE_URL=postgresql://... npm run dev
 ```
+
+See [src/database/README.md](../database/README.md) for PostgreSQL setup instructions.
 
 ## HTTP API
 
