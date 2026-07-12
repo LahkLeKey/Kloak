@@ -1,5 +1,5 @@
-import type {DeploymentRepository} from '../core';
-import type {Deployment, DeploymentId, DesiredStateSnapshot, DriftFinding, InfrastructureDesiredState, KeycloakDesiredState, ProvisioningTarget, ReconciliationRun,} from '../shared';
+import type {DeploymentRepository} from '../core/index.ts';
+import type {Deployment, DeploymentId, DesiredStateSnapshot, DriftFinding, InfrastructureDesiredState, KeycloakDesiredState, ProvisioningTarget, ReconciliationRun,} from '../shared/index.ts';
 
 export interface KeycloakLiveState {
   readonly realmName: string;
@@ -233,4 +233,4 @@ function sameStringSet(
       (value, index) => value === normalizedRight[index]);
 }
 
-export * from './fakes';
+export * from './fakes.ts';

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {diffDesiredState} from './index';
+import {diffDesiredState} from './index.ts';
 
 const desiredState = {
   deploymentId: 'deployment-1',
