@@ -1,0 +1,45 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Create release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: |
+            # Kloak ${{ steps.version.outputs.VERSION }}
+
+            ## What's changed
+            See commit history: ${{ github.server_url }}/${{ github.repository }}/compare/${{ github.event.before }}...${{ github.sha }}
+
+            ## Deployment
+            Deploy this release to Fly.io:
+            ```bash
+            flyctl deploy --image kloak:${{ steps.version.outputs.VERSION }}
+            ```
+
+            ## Changelog
+            - Full changelog: [GitHub releases](https://github.com/${{ github.repository }}/releases)
+          files: |
+            package.json
+            fly.toml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,27 +1,14 @@
-import {
-  RDSClient,
-  CreateDBInstanceCommand,
-  DescribeDBInstancesCommand,
-  DeleteDBInstanceCommand,
-} from '@aws-sdk/client-rds';
-import {
-  Route53Client,
-  ListResourceRecordSetsCommand,
-  ChangeResourceRecordSetsCommand,
-} from '@aws-sdk/client-route-53';
-import {
-  SecretsManagerClient,
-  CreateSecretCommand,
-  DescribeSecretCommand,
-} from '@aws-sdk/client-secrets-manager';
+import {CreateDBInstanceCommand, DeleteDBInstanceCommand, DescribeDBInstancesCommand, RDSClient,} from '@aws-sdk/client-rds';
+import {ChangeResourceRecordSetsCommand, ListResourceRecordSetsCommand, Route53Client,} from '@aws-sdk/client-route-53';
+import {CreateSecretCommand, DescribeSecretCommand, SecretsManagerClient,} from '@aws-sdk/client-secrets-manager';
 
+import type {InfrastructureService, ProvisioningPlan, ProvisioningResult} from '../infrastructure/index.ts';
 import type {DeploymentId, ProvisioningTarget} from '../shared/index.ts';
-import type {ProvisioningPlan, ProvisioningResult, InfrastructureService} from '../infrastructure/index.ts';
 
 export interface AwsProvisionerConfig {
   readonly region: string;
   readonly accountId: string;
-  readonly hostedZoneId?: string; // For Route53 DNS
+  readonly hostedZoneId?: string;  // For Route53 DNS
 }
 
 export class AwsProvisioner implements InfrastructureService {
@@ -47,27 +34,28 @@ export class AwsProvisioner implements InfrastructureService {
         const dbPassword = this.generatePassword();
 
         const createDbResponse = await this.rds.send(
-          new CreateDBInstanceCommand({
-            DBInstanceIdentifier: dbInstanceId,
-            DBInstanceClass: 'db.t3.micro',
-            Engine: 'postgres',
-            MasterUsername: 'admin',
-            MasterUserPassword: dbPassword,
-            AllocatedStorage: 20,
-            StorageType: 'gp3',
-            VpcSecurityGroupIds: [plan.target.securityGroupId || 'default'],
-            DBName: 'kloak',
-            Tags: [
-              {Key: 'DeploymentId', Value: plan.deploymentId},
-              {Key: 'ManagedBy', Value: 'kloak'},
-            ],
-          }),
+            new CreateDBInstanceCommand({
+              DBInstanceIdentifier: dbInstanceId,
+              DBInstanceClass: 'db.t3.micro',
+              Engine: 'postgres',
+              MasterUsername: 'admin',
+              MasterUserPassword: dbPassword,
+              AllocatedStorage: 20,
+              StorageType: 'gp3',
+              VpcSecurityGroupIds: [plan.target.securityGroupId || 'default'],
+              DBName: 'kloak',
+              Tags: [
+                {Key: 'DeploymentId', Value: plan.deploymentId},
+                {Key: 'ManagedBy', Value: 'kloak'},
+              ],
+            }),
         );
 
         if (createDbResponse.DBInstance?.Endpoint?.Address) {
-          externalReferences['database'] = createDbResponse.DBInstance.Endpoint.Address;
+          externalReferences['database'] =
+              createDbResponse.DBInstance.Endpoint.Address;
           externalReferences['database_port'] = String(
-            createDbResponse.DBInstance.Endpoint.Port || 5432,
+              createDbResponse.DBInstance.Endpoint.Port || 5432,
           );
           externalReferences['database_password'] = dbPassword;
         }
@@ -83,14 +71,14 @@ export class AwsProvisioner implements InfrastructureService {
         };
 
         const secretResponse = await this.secretsManager.send(
-          new CreateSecretCommand({
-            Name: secretName,
-            SecretString: JSON.stringify(secretValue),
-            Tags: [
-              {Key: 'DeploymentId', Value: plan.deploymentId},
-              {Key: 'ManagedBy', Value: 'kloak'},
-            ],
-          }),
+            new CreateSecretCommand({
+              Name: secretName,
+              SecretString: JSON.stringify(secretValue),
+              Tags: [
+                {Key: 'DeploymentId', Value: plan.deploymentId},
+                {Key: 'ManagedBy', Value: 'kloak'},
+              ],
+            }),
         );
 
         if (secretResponse.ARN) {
@@ -100,13 +88,14 @@ export class AwsProvisioner implements InfrastructureService {
 
       // Provision DNS records
       if (plan.createDns && this.config.hostedZoneId) {
-        const dnsName = `${plan.deploymentId}.${plan.target.dnsDomain || 'example.com'}`;
+        const dnsName =
+            `${plan.deploymentId}.${plan.target.dnsDomain || 'example.com'}`;
 
         const listResponse = await this.route53.send(
-          new ListResourceRecordSetsCommand({
-            HostedZoneId: this.config.hostedZoneId,
-            MaxItems: '1',
-          }),
+            new ListResourceRecordSetsCommand({
+              HostedZoneId: this.config.hostedZoneId,
+              MaxItems: '1',
+            }),
         );
 
         if (listResponse.ResourceRecordSets) {
@@ -144,14 +133,15 @@ export class AwsProvisioner implements InfrastructureService {
       // Delete database instance
       const dbInstanceId = `kloak-${deploymentId}`;
       await this.rds.send(
-        new DeleteDBInstanceCommand({
-          DBInstanceIdentifier: dbInstanceId,
-          SkipFinalSnapshot: true,
-        }),
+          new DeleteDBInstanceCommand({
+            DBInstanceIdentifier: dbInstanceId,
+            SkipFinalSnapshot: true,
+          }),
       );
     } catch (error) {
       // Instance might not exist, that's okay
-      if (!(error instanceof Error && error.message.includes('DBInstanceNotFound'))) {
+      if (!(error instanceof Error &&
+            error.message.includes('DBInstanceNotFound'))) {
         console.error('AWS teardown error:', error);
         throw error;
       }
@@ -160,7 +150,7 @@ export class AwsProvisioner implements InfrastructureService {
 
   private generatePassword(length = 16): string {
     const chars =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
     let password = '';
     for (let i = 0; i < length; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
