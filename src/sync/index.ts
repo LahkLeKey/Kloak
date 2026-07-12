@@ -50,10 +50,10 @@ export class SyncService {
         await this.dependencies.infrastructure.readLiveState(deployment.target);
     const findings = diffDesiredState(
         desiredState, keycloakLiveState, infrastructureLiveState);
-    const keycloakFindings = findings.filter(
-      (finding) => finding.scope === 'keycloak');
-    const infrastructureFindings = findings.filter(
-      (finding) => finding.scope === 'infrastructure');
+    const keycloakFindings =
+        findings.filter((finding) => finding.scope === 'keycloak');
+    const infrastructureFindings =
+        findings.filter((finding) => finding.scope === 'infrastructure');
 
     if (findings.length === 0) {
       const run: ReconciliationRun = {

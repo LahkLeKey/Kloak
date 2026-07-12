@@ -1,9 +1,9 @@
 import type {Server} from 'node:http';
 import {createServer} from 'node:http';
 
-import {CoreService} from '../core/index.ts';
-import {InMemoryDeploymentRepository} from '../core/index.ts';
-import {SqlDeploymentRepository, runMigrations} from '../database/index.ts';
+import {CoreService, InMemoryDeploymentRepository} from '../core/index.ts';
+import {runMigrations, SqlDeploymentRepository} from '../database/index.ts';
+
 import type {HttpMethod, HttpRequest, HttpResponse} from './handler.ts';
 import {AdminHandler} from './handler.ts';
 
@@ -12,7 +12,8 @@ export interface ServerConfig {
   readonly host?: string;
 }
 
-function matchRoute(path: string, pattern: string): Record<string, string>|null {
+function matchRoute(path: string, pattern: string): Record<string, string>|
+    null {
   const patternSegments = pattern.split('/');
   const pathSegments = path.split('/');
   if (patternSegments.length !== pathSegments.length) return null;
@@ -67,7 +68,8 @@ async function readBody(req: NodeJS.ReadableStream): Promise<unknown> {
 }
 
 export async function startServer(config: ServerConfig): Promise<Server> {
-  // Initialize repository (PostgreSQL if DATABASE_URL is set, otherwise in-memory)
+  // Initialize repository (PostgreSQL if DATABASE_URL is set, otherwise
+  // in-memory)
   let repository;
   const databaseUrl = process.env.DATABASE_URL;
 
@@ -77,7 +79,8 @@ export async function startServer(config: ServerConfig): Promise<Server> {
     repository = new SqlDeploymentRepository({connectionString: databaseUrl});
     console.log('✓ PostgreSQL repository initialized');
   } else {
-    console.log('Using in-memory repository (set DATABASE_URL to use PostgreSQL)');
+    console.log(
+        'Using in-memory repository (set DATABASE_URL to use PostgreSQL)');
     repository = new InMemoryDeploymentRepository();
   }
 
@@ -87,8 +90,9 @@ export async function startServer(config: ServerConfig): Promise<Server> {
   const server = createServer(async (req, res) => {
     try {
       const method = (req.method || 'GET') as HttpMethod;
-      const pathname = new URL(req.url || '/', `http://${req.headers.host}`).pathname;
-      
+      const pathname =
+          new URL(req.url || '/', `http://${req.headers.host}`).pathname;
+
       const routePattern = findRoutePattern(pathname);
       if (!routePattern) {
         res.writeHead(404, {'Content-Type': 'application/json'});
@@ -108,7 +112,8 @@ export async function startServer(config: ServerConfig): Promise<Server> {
 
       const httpResponse = await handler.handle(httpRequest);
 
-      const headers: Record<string, string> = {'Content-Type': 'application/json'};
+      const headers:
+          Record<string, string> = {'Content-Type': 'application/json'};
       res.writeHead(httpResponse.status, headers);
       res.end(JSON.stringify(httpResponse.body));
     } catch (error) {

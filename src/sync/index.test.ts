@@ -20,11 +20,11 @@ const desiredState = {
   },
 } as const;
 
-test('diffDesiredState reports no drift when ingress hosts match in any order',
+test(
+    'diffDesiredState reports no drift when ingress hosts match in any order',
     () => {
       const findings = diffDesiredState(
-          desiredState,
-          {
+          desiredState, {
             realmName: 'customer-a',
             clients: [],
             roles: [],
@@ -48,8 +48,7 @@ test('diffDesiredState reports no drift when ingress hosts match in any order',
 
 test('diffDesiredState reports drift when ingress hosts differ', () => {
   const findings = diffDesiredState(
-      desiredState,
-      {
+      desiredState, {
         realmName: 'customer-a',
         clients: [],
         roles: [],
