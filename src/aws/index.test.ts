@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import type {DeploymentId, ProvisioningTarget} from '../shared/index.ts';
 import type {ProvisioningPlan} from '../infrastructure/index.ts';
+import type {DeploymentId, ProvisioningTarget} from '../shared/index.ts';
 
 // Mock AWS SDK classes to avoid actual AWS calls in tests
 class MockRDSClient {
@@ -38,7 +38,8 @@ class MockRoute53Client {
 class MockSecretsManagerClient {
   async send(command: unknown) {
     return {
-      ARN: 'arn:aws:secretsmanager:us-east-1:123456789012:secret:kloak/dep-1/secrets',
+      ARN:
+          'arn:aws:secretsmanager:us-east-1:123456789012:secret:kloak/dep-1/secrets',
     };
   }
 
@@ -66,7 +67,7 @@ test('AWS provisioner generates passwords', async () => {
   // Test password generation
   const generatePassword = (length = 16): string => {
     const chars =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
     let password = '';
     for (let i = 0; i < length; i++) {
       password += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -87,14 +88,17 @@ test('AWS provisioner structures external references', async () => {
     database: 'kloak-db.c9akciq32.us-east-1.rds.amazonaws.com',
     database_port: '5432',
     database_password: 'SecurePassword123!',
-    secrets_arn: 'arn:aws:secretsmanager:us-east-1:123456789012:secret:kloak/dep-1/secrets',
+    secrets_arn:
+        'arn:aws:secretsmanager:us-east-1:123456789012:secret:kloak/dep-1/secrets',
     dns_record: 'dep-1.example.com',
     dns_zone_id: 'Z1234567890ABC',
     ingress_type: 'ALB',
     ingress_scheme: 'internet-facing',
   };
 
-  assert.equal(externalReferences.database, 'kloak-db.c9akciq32.us-east-1.rds.amazonaws.com');
+  assert.equal(
+      externalReferences.database,
+      'kloak-db.c9akciq32.us-east-1.rds.amazonaws.com');
   assert.equal(externalReferences.database_port, '5432');
   assert(externalReferences.database_password.length >= 16);
   assert(externalReferences.secrets_arn.includes('arn:aws:secretsmanager'));

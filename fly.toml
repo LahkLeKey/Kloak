@@ -1,0 +1,103 @@
+# Fly.io configuration for Kloak
+
+app = "kloak"
+primary_region = "lax"
+
+# Builder
+build.builder = "pacer"
+build.dockerfile = "./Dockerfile"
+
+# Process group
+[processes]
+app = "node --experimental-transform-types src/admin-ui/cli.ts"
+
+# HTTP service
+[[services]]
+internal_port = 3000
+protocol = "tcp"
+
+[services.concurrency]
+type = "requests"
+hard_limit = 1000
+soft_limit = 800
+
+[[services.ports]]
+port = 80
+handlers = ["http"]
+force_https = true
+
+[[services.ports]]
+port = 443
+handlers = ["tls", "http"]
+
+[services.tcp_checks]
+enabled = true
+interval = "15s"
+timeout = "4s"
+grace_period = "1s"
+
+# Health check
+[services.http_options]
+compress = true
+
+[[services.http_checks]]
+enabled = true
+grace_period = "10s"
+interval = "15s"
+method = "GET"
+path = "/health"
+protocol = "http"
+timeout = "5s"
+tls_options = {}
+tls_skip_verify = false
+headers = {}
+
+# Metrics
+[metrics]
+port = 9090
+
+# Environment variables (defaults, can be overridden by secrets)
+[env]
+PORT = "3000"
+HOST = "0.0.0.0"
+NODE_ENV = "production"
+LOG_LEVEL = "info"
+
+# Secrets (set via `fly secrets set`)
+# DATABASE_URL=postgres://...
+# AWS_REGION=us-east-1
+# AWS_ACCESS_KEY_ID=...
+# AWS_SECRET_ACCESS_KEY=...
+# AWS_ACCOUNT_ID=...
+# AWS_HOSTED_ZONE_ID=...
+# KEYCLOAK_BASE_URL=https://keycloak.example.com
+# KEYCLOAK_REALM_ADMIN_USER=admin
+# KEYCLOAK_REALM_ADMIN_PASSWORD=...
+# KEYCLOAK_CLIENT_ID=kloak
+# KEYCLOAK_CLIENT_SECRET=...
+
+# Autoscaling
+[autoscaling]
+enabled = true
+min_machines = 1
+max_machines = 3
+
+[[autoscaling.policies]]
+type = "cpu"
+threshold = 70
+
+[[autoscaling.policies]]
+type = "memory"
+threshold = 75
+
+# VM configuration
+[[machines]]
+cpu_kind = "shared"
+cpus = 1
+memory_mb = 256
+processes = ["app"]
+
+# Volume for persistent data (optional, if not using managed database)
+# [[mounts]]
+# source = "kloak_data"
+# destination = "/data"
