@@ -1,4 +1,4 @@
-import type {ProvisioningReferences, ProvisioningTarget} from '../shared';
+import type { ProvisioningReferences, ProvisioningTarget } from '../shared';
 
 export interface ProvisioningPlan {
   readonly target: ProvisioningTarget;

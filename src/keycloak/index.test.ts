@@ -1,9 +1,8 @@
 import assert from 'node:assert/strict';
-import {createServer} from 'node:http';
+import { createServer } from 'node:http';
 import test from 'node:test';
-
-import {HttpKeycloakClient} from './index.ts';
-import type {Deployment, KeycloakDesiredState} from '../shared/index.ts';
+import type { Deployment, KeycloakDesiredState } from '../shared/index.ts';
+import { HttpKeycloakClient } from './index.ts';
 
 // Mock Keycloak server for testing
 function createMockKeycloakServer() {
@@ -12,82 +11,87 @@ function createMockKeycloakServer() {
 
     // Token endpoint
     if (url.pathname === '/realms/master/protocol/openid-connect/token') {
-      res.writeHead(200, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify({
-        access_token: 'test-token-123',
-        expires_in: 300,
-        refresh_expires_in: 1800,
-        refresh_token: 'test-refresh-token',
-        token_type: 'Bearer',
-      }));
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(
+        JSON.stringify({
+          access_token: 'test-token-123',
+          expires_in: 300,
+          refresh_expires_in: 1800,
+          refresh_token: 'test-refresh-token',
+          token_type: 'Bearer',
+        })
+      );
       return;
     }
 
     // Get realm
     if (url.pathname === '/admin/realms/customer-acme') {
-      res.writeHead(200, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify({
-        realm: 'customer-acme',
-        enabled: true,
-        displayName: 'Acme Realm',
-      }));
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(
+        JSON.stringify({
+          realm: 'customer-acme',
+          enabled: true,
+          displayName: 'Acme Realm',
+        })
+      );
       return;
     }
 
     // Create realm
     if (url.pathname === '/admin/realms' && req.method === 'POST') {
-      res.writeHead(201, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify({success: true}));
+      res.writeHead(201, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true }));
       return;
     }
 
     // List clients
     if (url.pathname === '/admin/realms/customer-acme/clients') {
-      res.writeHead(200, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify([
-        {clientId: 'webapp', enabled: true},
-        {clientId: 'mobile', enabled: true},
-      ]));
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(
+        JSON.stringify([
+          { clientId: 'webapp', enabled: true },
+          { clientId: 'mobile', enabled: true },
+        ])
+      );
       return;
     }
 
     // Create client
     if (url.pathname === '/admin/realms/customer-acme/clients' && req.method === 'POST') {
-      res.writeHead(201, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify({id: 'client-123'}));
+      res.writeHead(201, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ id: 'client-123' }));
       return;
     }
 
     // List roles
     if (url.pathname === '/admin/realms/customer-acme/roles') {
-      res.writeHead(200, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify([
-        {name: 'admin', description: 'Administrator'},
-        {name: 'user', description: 'Regular user'},
-      ]));
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(
+        JSON.stringify([
+          { name: 'admin', description: 'Administrator' },
+          { name: 'user', description: 'Regular user' },
+        ])
+      );
       return;
     }
 
     // Create role
     if (url.pathname === '/admin/realms/customer-acme/roles' && req.method === 'POST') {
-      res.writeHead(201, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify({name: 'viewer'}));
+      res.writeHead(201, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ name: 'viewer' }));
       return;
     }
 
     // List groups
     if (url.pathname === '/admin/realms/customer-acme/groups') {
-      res.writeHead(200, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify([
-        {name: 'engineering'},
-        {name: 'sales'},
-      ]));
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify([{ name: 'engineering' }, { name: 'sales' }]));
       return;
     }
 
     // User count
     if (url.pathname === '/admin/realms/customer-acme/users/count') {
-      res.writeHead(200, {'Content-Type': 'application/json'});
+      res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end('42');
       return;
     }
@@ -102,7 +106,7 @@ function createMockKeycloakServer() {
 
 test('HttpKeycloakClient reads live state from Keycloak', async () => {
   const server = createMockKeycloakServer();
-  const port = await new Promise<number>((resolve) => {
+  const port = await new Promise<number>(resolve => {
     server.listen(0, 'localhost', () => {
       const addr = server.address();
       if (addr && typeof addr !== 'string') {
@@ -124,7 +128,7 @@ test('HttpKeycloakClient reads live state from Keycloak', async () => {
       id: 'dep-1' as any,
       customerId: 'acme' as any,
       name: 'prod',
-      target: {createDatabase: true, createIngress: true, createDns: true, createSecrets: true},
+      target: { createDatabase: true, createIngress: true, createDns: true, createSecrets: true },
       status: 'healthy' as any,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -144,7 +148,7 @@ test('HttpKeycloakClient reads live state from Keycloak', async () => {
 
 test('HttpKeycloakClient applies desired state to Keycloak', async () => {
   const server = createMockKeycloakServer();
-  const port = await new Promise<number>((resolve) => {
+  const port = await new Promise<number>(resolve => {
     server.listen(0, 'localhost', () => {
       const addr = server.address();
       if (addr && typeof addr !== 'string') {
@@ -166,7 +170,7 @@ test('HttpKeycloakClient applies desired state to Keycloak', async () => {
       id: 'dep-1' as any,
       customerId: 'acme' as any,
       name: 'prod',
-      target: {createDatabase: true, createIngress: true, createDns: true, createSecrets: true},
+      target: { createDatabase: true, createIngress: true, createDns: true, createSecrets: true },
       status: 'healthy' as any,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -189,7 +193,7 @@ test('HttpKeycloakClient applies desired state to Keycloak', async () => {
 
 test('HttpKeycloakClient verifies live state matches desired state', async () => {
   const server = createMockKeycloakServer();
-  const port = await new Promise<number>((resolve) => {
+  const port = await new Promise<number>(resolve => {
     server.listen(0, 'localhost', () => {
       const addr = server.address();
       if (addr && typeof addr !== 'string') {
@@ -211,7 +215,7 @@ test('HttpKeycloakClient verifies live state matches desired state', async () =>
       id: 'dep-1' as any,
       customerId: 'acme' as any,
       name: 'prod',
-      target: {createDatabase: true, createIngress: true, createDns: true, createSecrets: true},
+      target: { createDatabase: true, createIngress: true, createDns: true, createSecrets: true },
       status: 'healthy' as any,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -234,7 +238,7 @@ test('HttpKeycloakClient verifies live state matches desired state', async () =>
 
 test('HttpKeycloakClient throws when live state does not match desired state', async () => {
   const server = createMockKeycloakServer();
-  const port = await new Promise<number>((resolve) => {
+  const port = await new Promise<number>(resolve => {
     server.listen(0, 'localhost', () => {
       const addr = server.address();
       if (addr && typeof addr !== 'string') {
@@ -256,7 +260,7 @@ test('HttpKeycloakClient throws when live state does not match desired state', a
       id: 'dep-1' as any,
       customerId: 'acme' as any,
       name: 'prod',
-      target: {createDatabase: true, createIngress: true, createDns: true, createSecrets: true},
+      target: { createDatabase: true, createIngress: true, createDns: true, createSecrets: true },
       status: 'healthy' as any,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -273,7 +277,7 @@ test('HttpKeycloakClient throws when live state does not match desired state', a
     // Should throw when live state does not match
     await assert.rejects(
       () => client.verifyLiveState(deployment, desiredState),
-      /Verification failed/,
+      /Verification failed/
     );
   } finally {
     server.close();

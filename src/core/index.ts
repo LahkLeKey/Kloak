@@ -1,4 +1,16 @@
-import type {AuditEvent, CustomerId, Deployment, DeploymentId, DeploymentStatus, DeploymentVersion, DeploymentVersionId, DesiredStateSnapshot, ProvisioningReferences, ProvisioningTarget, ReconciliationRun,} from '../shared';
+import type {
+  AuditEvent,
+  CustomerId,
+  Deployment,
+  DeploymentId,
+  DeploymentStatus,
+  DeploymentVersion,
+  DeploymentVersionId,
+  DesiredStateSnapshot,
+  ProvisioningReferences,
+  ProvisioningTarget,
+  ReconciliationRun,
+} from '../shared';
 
 export interface CreateDeploymentInput {
   readonly customerId: CustomerId;
@@ -15,11 +27,9 @@ export interface CreateDeploymentVersionInput {
 
 export interface DeploymentRepository {
   listDeployments(): Promise<readonly Deployment[]>;
-  listDeploymentVersions(deploymentId: DeploymentId):
-      Promise<readonly DeploymentVersion[]>;
-  getDeployment(deploymentId: DeploymentId): Promise<Deployment|null>;
-  getDesiredState(versionId: DeploymentVersionId):
-      Promise<DesiredStateSnapshot|null>;
+  listDeploymentVersions(deploymentId: DeploymentId): Promise<readonly DeploymentVersion[]>;
+  getDeployment(deploymentId: DeploymentId): Promise<Deployment | null>;
+  getDesiredState(versionId: DeploymentVersionId): Promise<DesiredStateSnapshot | null>;
   saveDeployment(deployment: Deployment): Promise<void>;
   saveDeploymentVersion(version: DeploymentVersion): Promise<void>;
   recordDesiredState(snapshot: DesiredStateSnapshot): Promise<void>;
@@ -29,24 +39,22 @@ export interface DeploymentRepository {
 
 export interface CoreApi {
   createDeployment(input: CreateDeploymentInput): Promise<Deployment>;
-  createDeploymentVersion(input: CreateDeploymentVersionInput):
-      Promise<DeploymentVersion>;
-  markDeploymentStatus(deploymentId: DeploymentId, status: DeploymentStatus):
-      Promise<Deployment>;
-  getDeployment(deploymentId: DeploymentId): Promise<Deployment|null>;
+  createDeploymentVersion(input: CreateDeploymentVersionInput): Promise<DeploymentVersion>;
+  markDeploymentStatus(deploymentId: DeploymentId, status: DeploymentStatus): Promise<Deployment>;
+  getDeployment(deploymentId: DeploymentId): Promise<Deployment | null>;
   listDeployments(): Promise<readonly Deployment[]>;
   recordReconciliationRun(run: ReconciliationRun): Promise<void>;
   recordProvisioningReferences(
-      deploymentId: DeploymentId,
-      references: ProvisioningReferences): Promise<void>;
+    deploymentId: DeploymentId,
+    references: ProvisioningReferences
+  ): Promise<void>;
   appendAuditEvent(event: AuditEvent): Promise<void>;
 }
 
 export class InMemoryDeploymentRepository implements DeploymentRepository {
   private readonly deployments = new Map<DeploymentId, Deployment>();
   private readonly versions = new Map<DeploymentVersionId, DeploymentVersion>();
-  private readonly desiredStates =
-      new Map<DeploymentVersionId, DesiredStateSnapshot>();
+  private readonly desiredStates = new Map<DeploymentVersionId, DesiredStateSnapshot>();
   private readonly reconciliationRuns = new Map<string, ReconciliationRun>();
   private readonly auditEvents = new Map<string, AuditEvent>();
 
@@ -54,18 +62,15 @@ export class InMemoryDeploymentRepository implements DeploymentRepository {
     return [...this.deployments.values()];
   }
 
-  async listDeploymentVersions(deploymentId: DeploymentId):
-      Promise<readonly DeploymentVersion[]> {
-    return [...this.versions.values()].filter(
-        (version) => version.deploymentId === deploymentId);
+  async listDeploymentVersions(deploymentId: DeploymentId): Promise<readonly DeploymentVersion[]> {
+    return [...this.versions.values()].filter(version => version.deploymentId === deploymentId);
   }
 
-  async getDeployment(deploymentId: DeploymentId): Promise<Deployment|null> {
+  async getDeployment(deploymentId: DeploymentId): Promise<Deployment | null> {
     return this.deployments.get(deploymentId) ?? null;
   }
 
-  async getDesiredState(versionId: DeploymentVersionId):
-      Promise<DesiredStateSnapshot|null> {
+  async getDesiredState(versionId: DeploymentVersionId): Promise<DesiredStateSnapshot | null> {
     return this.desiredStates.get(versionId) ?? null;
   }
 
@@ -109,15 +114,13 @@ export class CoreService implements CoreApi {
     return deployment;
   }
 
-  async createDeploymentVersion(input: CreateDeploymentVersionInput):
-      Promise<DeploymentVersion> {
+  async createDeploymentVersion(input: CreateDeploymentVersionInput): Promise<DeploymentVersion> {
     const deployment = await this.repository.getDeployment(input.deploymentId);
     if (deployment === null) {
       throw new Error(`Deployment ${input.deploymentId} does not exist.`);
     }
 
-    const existingVersions =
-        await this.repository.listDeploymentVersions(input.deploymentId);
+    const existingVersions = await this.repository.listDeploymentVersions(input.deploymentId);
     const versionNumber = existingVersions.length + 1;
 
     const version: DeploymentVersion = {
@@ -146,8 +149,7 @@ export class CoreService implements CoreApi {
     await this.repository.saveDeployment({
       ...deployment,
       desiredVersionId: version.id,
-      status: deployment.currentVersionId === undefined ? 'provisioning' :
-                                                          'repairing',
+      status: deployment.currentVersionId === undefined ? 'provisioning' : 'repairing',
       updatedAt: new Date().toISOString(),
     });
 
@@ -155,8 +157,9 @@ export class CoreService implements CoreApi {
   }
 
   async markDeploymentStatus(
-      deploymentId: DeploymentId,
-      status: DeploymentStatus): Promise<Deployment> {
+    deploymentId: DeploymentId,
+    status: DeploymentStatus
+  ): Promise<Deployment> {
     const deployment = await this.repository.getDeployment(deploymentId);
     if (deployment === null) {
       throw new Error(`Deployment ${deploymentId} does not exist.`);
@@ -172,7 +175,7 @@ export class CoreService implements CoreApi {
     return updatedDeployment;
   }
 
-  async getDeployment(deploymentId: DeploymentId): Promise<Deployment|null> {
+  async getDeployment(deploymentId: DeploymentId): Promise<Deployment | null> {
     return this.repository.getDeployment(deploymentId);
   }
 
@@ -185,8 +188,9 @@ export class CoreService implements CoreApi {
   }
 
   async recordProvisioningReferences(
-      deploymentId: DeploymentId,
-      references: ProvisioningReferences): Promise<void> {
+    deploymentId: DeploymentId,
+    references: ProvisioningReferences
+  ): Promise<void> {
     const deployment = await this.repository.getDeployment(deploymentId);
     if (deployment === null) {
       throw new Error(`Deployment ${deploymentId} does not exist.`);

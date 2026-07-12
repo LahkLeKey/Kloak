@@ -1,5 +1,13 @@
-import type {DeploymentRepository} from '../core/index.ts';
-import type {Deployment, DeploymentId, DesiredStateSnapshot, DriftFinding, InfrastructureDesiredState, KeycloakDesiredState, ProvisioningTarget, ReconciliationRun,} from '../shared/index.ts';
+import type { DeploymentRepository } from '../core/index.ts';
+import type {
+  Deployment,
+  DeploymentId,
+  DesiredStateSnapshot,
+  DriftFinding,
+  KeycloakDesiredState,
+  ProvisioningTarget,
+  ReconciliationRun,
+} from '../shared/index.ts';
 
 export interface KeycloakLiveState {
   readonly realmName: string;
@@ -18,10 +26,8 @@ export interface InfrastructureLiveState {
 
 export interface KeycloakClient {
   readLiveState(deployment: Deployment): Promise<KeycloakLiveState>;
-  applyDesiredState(deployment: Deployment, desiredState: KeycloakDesiredState):
-      Promise<void>;
-  verifyLiveState(deployment: Deployment, desiredState: KeycloakDesiredState):
-      Promise<void>;
+  applyDesiredState(deployment: Deployment, desiredState: KeycloakDesiredState): Promise<void>;
+  verifyLiveState(deployment: Deployment, desiredState: KeycloakDesiredState): Promise<void>;
 }
 
 export interface InfrastructureStateReader {
@@ -38,22 +44,18 @@ export interface SyncServiceDependencies {
 export class SyncService {
   constructor(private readonly dependencies: SyncServiceDependencies) {}
 
-  async reconcileDeployment(deploymentId: DeploymentId):
-      Promise<ReconciliationRun> {
+  async reconcileDeployment(deploymentId: DeploymentId): Promise<ReconciliationRun> {
     const deployment = await this.requireDeployment(deploymentId);
     const desiredState = await this.loadDesiredState(deployment);
     const startedAt = this.now().toISOString();
 
-    const keycloakLiveState =
-        await this.dependencies.keycloak.readLiveState(deployment);
-    const infrastructureLiveState =
-        await this.dependencies.infrastructure.readLiveState(deployment.target);
-    const findings = diffDesiredState(
-        desiredState, keycloakLiveState, infrastructureLiveState);
-    const keycloakFindings =
-        findings.filter((finding) => finding.scope === 'keycloak');
-    const infrastructureFindings =
-        findings.filter((finding) => finding.scope === 'infrastructure');
+    const keycloakLiveState = await this.dependencies.keycloak.readLiveState(deployment);
+    const infrastructureLiveState = await this.dependencies.infrastructure.readLiveState(
+      deployment.target
+    );
+    const findings = diffDesiredState(desiredState, keycloakLiveState, infrastructureLiveState);
+    const keycloakFindings = findings.filter(finding => finding.scope === 'keycloak');
+    const infrastructureFindings = findings.filter(finding => finding.scope === 'infrastructure');
 
     if (findings.length === 0) {
       const run: ReconciliationRun = {
@@ -90,10 +92,8 @@ export class SyncService {
     await this.persistDeploymentStatus(deployment, 'repairing');
 
     try {
-      await this.dependencies.keycloak.applyDesiredState(
-          deployment, desiredState.keycloak);
-      await this.dependencies.keycloak.verifyLiveState(
-          deployment, desiredState.keycloak);
+      await this.dependencies.keycloak.applyDesiredState(deployment, desiredState.keycloak);
+      await this.dependencies.keycloak.verifyLiveState(deployment, desiredState.keycloak);
 
       if (infrastructureFindings.length > 0) {
         const driftedRun: ReconciliationRun = {
@@ -141,10 +141,8 @@ export class SyncService {
     }
   }
 
-  private async requireDeployment(deploymentId: DeploymentId):
-      Promise<Deployment> {
-    const deployment =
-        await this.dependencies.repository.getDeployment(deploymentId);
+  private async requireDeployment(deploymentId: DeploymentId): Promise<Deployment> {
+    const deployment = await this.dependencies.repository.getDeployment(deploymentId);
     if (deployment === null) {
       throw new Error(`Deployment ${deploymentId} does not exist.`);
     }
@@ -152,32 +150,32 @@ export class SyncService {
     return deployment;
   }
 
-  private async loadDesiredState(deployment: Deployment):
-      Promise<DesiredStateSnapshot> {
+  private async loadDesiredState(deployment: Deployment): Promise<DesiredStateSnapshot> {
     if (deployment.desiredVersionId === undefined) {
-      throw new Error(
-          `Deployment ${deployment.id} does not have a desired version.`);
+      throw new Error(`Deployment ${deployment.id} does not have a desired version.`);
     }
 
     const desiredState = await this.dependencies.repository.getDesiredState(
-        deployment.desiredVersionId);
+      deployment.desiredVersionId
+    );
     if (desiredState === null) {
-      throw new Error(
-          `Desired state ${deployment.desiredVersionId} does not exist.`);
+      throw new Error(`Desired state ${deployment.desiredVersionId} does not exist.`);
     }
 
     return desiredState;
   }
 
   private async persistDeploymentStatus(
-      deployment: Deployment, status: Deployment['status']): Promise<void> {
-    const shouldAdvanceVersion =
-        status === 'healthy' && deployment.desiredVersionId !== undefined;
+    deployment: Deployment,
+    status: Deployment['status']
+  ): Promise<void> {
+    const shouldAdvanceVersion = status === 'healthy' && deployment.desiredVersionId !== undefined;
 
     await this.dependencies.repository.saveDeployment({
       ...deployment,
-      currentVersionId: shouldAdvanceVersion ? deployment.desiredVersionId :
-                                               deployment.currentVersionId,
+      currentVersionId: shouldAdvanceVersion
+        ? deployment.desiredVersionId
+        : deployment.currentVersionId,
       status,
       updatedAt: this.now().toISOString(),
     });
@@ -189,10 +187,10 @@ export class SyncService {
 }
 
 export function diffDesiredState(
-    desiredState: DesiredStateSnapshot,
-    keycloakLiveState: KeycloakLiveState,
-    infrastructureLiveState: InfrastructureLiveState,
-    ): readonly DriftFinding[] {
+  desiredState: DesiredStateSnapshot,
+  keycloakLiveState: KeycloakLiveState,
+  infrastructureLiveState: InfrastructureLiveState
+): readonly DriftFinding[] {
   const findings: DriftFinding[] = [];
 
   if (desiredState.keycloak.realmName !== keycloakLiveState.realmName) {
@@ -205,9 +203,9 @@ export function diffDesiredState(
     });
   }
 
-  if (!sameStringSet(
-          desiredState.infrastructure.ingressHosts,
-          infrastructureLiveState.ingressHosts)) {
+  if (
+    !sameStringSet(desiredState.infrastructure.ingressHosts, infrastructureLiveState.ingressHosts)
+  ) {
     findings.push({
       scope: 'infrastructure',
       path: 'ingressHosts',
@@ -220,8 +218,7 @@ export function diffDesiredState(
   return findings;
 }
 
-function sameStringSet(
-    left: readonly string[], right: readonly string[]): boolean {
+function sameStringSet(left: readonly string[], right: readonly string[]): boolean {
   if (left.length !== right.length) {
     return false;
   }
@@ -229,8 +226,7 @@ function sameStringSet(
   const normalizedLeft = [...left].sort();
   const normalizedRight = [...right].sort();
 
-  return normalizedLeft.every(
-      (value, index) => value === normalizedRight[index]);
+  return normalizedLeft.every((value, index) => value === normalizedRight[index]);
 }
 
 export * from './fakes.ts';

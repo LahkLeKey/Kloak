@@ -1,19 +1,18 @@
-import type {Server} from 'node:http';
-import {createServer} from 'node:http';
+import type { Server } from 'node:http';
+import { createServer } from 'node:http';
+import type { DeploymentRepository } from '../core/index.ts';
+import { CoreService, InMemoryDeploymentRepository } from '../core/index.ts';
+import { runMigrations, SqlDeploymentRepository } from '../database/index.ts';
 
-import {CoreService, InMemoryDeploymentRepository} from '../core/index.ts';
-import {runMigrations, SqlDeploymentRepository} from '../database/index.ts';
-
-import type {HttpMethod, HttpRequest, HttpResponse} from './handler.ts';
-import {AdminHandler} from './handler.ts';
+import type { HttpMethod, HttpRequest } from './handler.ts';
+import { AdminHandler } from './handler.ts';
 
 export interface ServerConfig {
   readonly port: number;
   readonly host?: string;
 }
 
-function matchRoute(path: string, pattern: string): Record<string, string>|
-    null {
+function matchRoute(path: string, pattern: string): Record<string, string> | null {
   const patternSegments = pattern.split('/');
   const pathSegments = path.split('/');
   if (patternSegments.length !== pathSegments.length) return null;
@@ -30,7 +29,7 @@ function matchRoute(path: string, pattern: string): Record<string, string>|
   return params;
 }
 
-function findRoutePattern(path: string): string|null {
+function findRoutePattern(path: string): string | null {
   const patterns = [
     '/deployments/:id/versions',
     '/deployments/:id/status',
@@ -49,7 +48,7 @@ function findRoutePattern(path: string): string|null {
 async function readBody(req: NodeJS.ReadableStream): Promise<unknown> {
   return new Promise((resolve, reject) => {
     let data = '';
-    req.on('data', (chunk) => {
+    req.on('data', chunk => {
       data += chunk.toString();
     });
     req.on('end', () => {
@@ -59,7 +58,7 @@ async function readBody(req: NodeJS.ReadableStream): Promise<unknown> {
       }
       try {
         resolve(JSON.parse(data));
-      } catch (e) {
+      } catch (_e) {
         reject(new Error('Invalid JSON'));
       }
     });
@@ -70,17 +69,16 @@ async function readBody(req: NodeJS.ReadableStream): Promise<unknown> {
 export async function startServer(config: ServerConfig): Promise<Server> {
   // Initialize repository (PostgreSQL if DATABASE_URL is set, otherwise
   // in-memory)
-  let repository;
+  let repository: DeploymentRepository;
   const databaseUrl = process.env.DATABASE_URL;
 
   if (databaseUrl) {
     console.log('Initializing PostgreSQL repository...');
     await runMigrations(databaseUrl);
-    repository = new SqlDeploymentRepository({connectionString: databaseUrl});
+    repository = new SqlDeploymentRepository({ connectionString: databaseUrl });
     console.log('✓ PostgreSQL repository initialized');
   } else {
-    console.log(
-        'Using in-memory repository (set DATABASE_URL to use PostgreSQL)');
+    console.log('Using in-memory repository (set DATABASE_URL to use PostgreSQL)');
     repository = new InMemoryDeploymentRepository();
   }
 
@@ -90,13 +88,12 @@ export async function startServer(config: ServerConfig): Promise<Server> {
   const server = createServer(async (req, res) => {
     try {
       const method = (req.method || 'GET') as HttpMethod;
-      const pathname =
-          new URL(req.url || '/', `http://${req.headers.host}`).pathname;
+      const pathname = new URL(req.url || '/', `http://${req.headers.host}`).pathname;
 
       const routePattern = findRoutePattern(pathname);
       if (!routePattern) {
-        res.writeHead(404, {'Content-Type': 'application/json'});
-        res.end(JSON.stringify({error: 'Not found'}));
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Not found' }));
         return;
       }
 
@@ -112,14 +109,13 @@ export async function startServer(config: ServerConfig): Promise<Server> {
 
       const httpResponse = await handler.handle(httpRequest);
 
-      const headers:
-          Record<string, string> = {'Content-Type': 'application/json'};
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       res.writeHead(httpResponse.status, headers);
       res.end(JSON.stringify(httpResponse.body));
     } catch (error) {
       console.error('Handler error:', error);
-      res.writeHead(500, {'Content-Type': 'application/json'});
-      res.end(JSON.stringify({error: 'Internal server error'}));
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Internal server error' }));
     }
   });
 

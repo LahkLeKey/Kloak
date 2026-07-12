@@ -40,13 +40,13 @@ export interface InfrastructureDesiredState {
 
 export interface DnsRecord {
   readonly name: string;
-  readonly type: 'A'|'AAAA'|'CNAME'|'TXT';
+  readonly type: 'A' | 'AAAA' | 'CNAME' | 'TXT';
   readonly value: string;
 }
 
 export interface SecretSpec {
   readonly name: string;
-  readonly source: 'generated'|'managed'|'external';
+  readonly source: 'generated' | 'managed' | 'external';
 }
 
 export interface DesiredStateSnapshot {
@@ -56,8 +56,14 @@ export interface DesiredStateSnapshot {
   readonly infrastructure: InfrastructureDesiredState;
 }
 
-export type DeploymentStatus = 'draft'|'provisioning'|'healthy'|'drifted'|
-    'repairing'|'failed'|'decommissioned';
+export type DeploymentStatus =
+  | 'draft'
+  | 'provisioning'
+  | 'healthy'
+  | 'drifted'
+  | 'repairing'
+  | 'failed'
+  | 'decommissioned';
 
 export interface Deployment {
   readonly id: DeploymentId;
@@ -82,17 +88,17 @@ export interface DeploymentVersion {
   readonly createdAt: string;
 }
 
-export type DriftSeverity = 'info'|'warning'|'critical';
+export type DriftSeverity = 'info' | 'warning' | 'critical';
 
 export interface DriftFinding {
-  readonly scope: 'keycloak'|'infrastructure';
+  readonly scope: 'keycloak' | 'infrastructure';
   readonly path: string;
   readonly expected: unknown;
   readonly actual: unknown;
   readonly severity: DriftSeverity;
 }
 
-export type ReconciliationStatus = 'running'|'no-op'|'repaired'|'failed';
+export type ReconciliationStatus = 'running' | 'no-op' | 'repaired' | 'failed';
 
 export interface ReconciliationRun {
   readonly id: ReconciliationRunId;

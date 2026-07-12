@@ -23,7 +23,28 @@ COPY . .
 # Run tests to verify build
 RUN npm test
 
-# Stage 3: Production image
+# Stage 3: Development image
+FROM node:25.2.1-alpine AS development
+WORKDIR /app
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/package.json /app/package-lock.json ./
+
+# Copy source code
+COPY src ./src
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+USER nodejs
+
+# Expose port
+EXPOSE 3000
+
+# Start server with watch mode and experimental transform types
+CMD ["node", "--watch", "--experimental-transform-types", "src/admin-ui/cli.ts"]
+
+# Stage 4: Production image
 FROM node:25.2.1-alpine AS production
 WORKDIR /app
 

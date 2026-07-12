@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import {InMemoryInfrastructureService} from './in-memory.ts';
+import { InMemoryInfrastructureService } from './in-memory.ts';
 
 test('provision only returns the requested external references', async () => {
   const infrastructure = new InMemoryInfrastructureService();
