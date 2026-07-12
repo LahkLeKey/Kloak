@@ -1,7 +1,13 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import test from 'node:test';
-import type { Deployment, KeycloakDesiredState } from '../shared/index.ts';
+import type {
+  CustomerId,
+  Deployment,
+  DeploymentId,
+  DeploymentStatus,
+  KeycloakDesiredState,
+} from '../shared/index.ts';
 import { HttpKeycloakClient } from './index.ts';
 
 // Mock Keycloak server for testing
@@ -124,12 +130,12 @@ test('HttpKeycloakClient reads live state from Keycloak', async () => {
       clientSecret: 'secret',
     });
 
-    const deployment: Deployment = {
-      id: 'dep-1' as any,
-      customerId: 'acme' as any,
+    const deployment = {
+      id: 'dep-1' as DeploymentId,
+      customerId: 'acme' as CustomerId,
       name: 'prod',
       target: { createDatabase: true, createIngress: true, createDns: true, createSecrets: true },
-      status: 'healthy' as any,
+      status: 'healthy' as DeploymentStatus,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -167,11 +173,11 @@ test('HttpKeycloakClient applies desired state to Keycloak', async () => {
     });
 
     const deployment: Deployment = {
-      id: 'dep-1' as any,
-      customerId: 'acme' as any,
+      id: 'dep-1' as DeploymentId,
+      customerId: 'acme' as CustomerId,
       name: 'prod',
       target: { createDatabase: true, createIngress: true, createDns: true, createSecrets: true },
-      status: 'healthy' as any,
+      status: 'healthy' as DeploymentStatus,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -211,12 +217,12 @@ test('HttpKeycloakClient verifies live state matches desired state', async () =>
       clientSecret: 'secret',
     });
 
-    const deployment: Deployment = {
-      id: 'dep-1' as any,
-      customerId: 'acme' as any,
+    const deployment = {
+      id: 'dep-1' as DeploymentId,
+      customerId: 'acme' as CustomerId,
       name: 'prod',
       target: { createDatabase: true, createIngress: true, createDns: true, createSecrets: true },
-      status: 'healthy' as any,
+      status: 'healthy' as DeploymentStatus,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -256,12 +262,12 @@ test('HttpKeycloakClient throws when live state does not match desired state', a
       clientSecret: 'secret',
     });
 
-    const deployment: Deployment = {
-      id: 'dep-1' as any,
-      customerId: 'acme' as any,
+    const deployment = {
+      id: 'dep-1' as DeploymentId,
+      customerId: 'acme' as CustomerId,
       name: 'prod',
       target: { createDatabase: true, createIngress: true, createDns: true, createSecrets: true },
-      status: 'healthy' as any,
+      status: 'healthy' as DeploymentStatus,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

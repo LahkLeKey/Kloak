@@ -4,7 +4,8 @@ Guide for local development of Kloak.
 
 ## Prerequisites
 
-- Node.js >=25.0.0 (check with `node --version`)
+- Bun >=1.0.0 (check with `bun --version`)
+- Node.js >=25.0.0 (required by Bun, check with `node --version`)
 - PostgreSQL 15+ (optional, for persistent storage)
 - Docker & Docker Compose (optional, for local services)
 
@@ -13,13 +14,13 @@ Guide for local development of Kloak.
 ### 1. Install Dependencies
 
 ```bash
-npm install
+bun install
 ```
 
 ### 2. Run Tests
 
 ```bash
-npm test
+bun test
 ```
 
 All 18 tests should pass.
@@ -27,7 +28,7 @@ All 18 tests should pass.
 ### 3. Start Development Server
 
 ```bash
-npm run dev:watch
+bun run dev:watch
 ```
 
 Server starts at `http://localhost:3000` with automatic reload on file changes.
@@ -78,13 +79,13 @@ This starts:
 
 ```bash
 # Run tests
-docker exec kloak npm test
+docker exec kloak bun test
 
 # Check linting
-docker exec kloak npm run lint:check
+docker exec kloak bun run lint:check
 
 # Fix linting
-docker exec kloak npm run lint
+docker exec kloak bun run lint
 
 # View logs
 docker logs -f kloak

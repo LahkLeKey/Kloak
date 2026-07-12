@@ -4,47 +4,6 @@ import test from 'node:test';
 import type { ProvisioningPlan } from '../infrastructure/index.ts';
 import type { DeploymentId, ProvisioningTarget } from '../shared/index.ts';
 
-// Mock AWS SDK classes to avoid actual AWS calls in tests
-class MockRDSClient {
-  async send(_command: unknown) {
-    return {
-      DBInstance: {
-        Endpoint: {
-          Address: 'kloak-db.c9akciq32.us-east-1.rds.amazonaws.com',
-          Port: 5432,
-        },
-      },
-    };
-  }
-
-  destroy() {}
-}
-
-class MockRoute53Client {
-  async send(_command: unknown) {
-    return {
-      ResourceRecordSets: [
-        {
-          Name: 'example.com',
-          Type: 'A',
-        },
-      ],
-    };
-  }
-
-  destroy() {}
-}
-
-class MockSecretsManagerClient {
-  async send(_command: unknown) {
-    return {
-      ARN: 'arn:aws:secretsmanager:us-east-1:123456789012:secret:kloak/dep-1/secrets',
-    };
-  }
-
-  destroy() {}
-}
-
 test('AWS provisioner provisions database', async () => {
   const plan: ProvisioningPlan = {
     deploymentId: 'dep-1' as DeploymentId,

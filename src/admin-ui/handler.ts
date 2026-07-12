@@ -73,9 +73,10 @@ export function matchRoute(reqPath: string, pattern: string): Record<string, str
   const params: Record<string, string> = {};
   for (let i = 0; i < patternParts.length; i++) {
     const seg = patternParts[i];
-    if (seg === undefined || pathParts[i] === undefined) return null;
+    const pathPart = pathParts[i];
+    if (seg === undefined || pathPart === undefined) return null;
     if (seg.startsWith(':')) {
-      params[seg.slice(1)] = pathParts[i]!;
+      params[seg.slice(1)] = pathPart;
     } else if (seg !== pathParts[i]) {
       return null;
     }

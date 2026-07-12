@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: development  # Use development stage for docker-compose (includes node --watch)
+      target: development  # Use development stage for docker-compose (includes bun --watch)
     container_name: kloak
     ports:
       - "3000:3000"

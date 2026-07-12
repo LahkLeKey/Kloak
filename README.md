@@ -8,16 +8,16 @@ Kloak manages Keycloak deployments.
 
 ```bash
 # Install dependencies
-npm install
+bun install
 
 # Run tests
-npm test
+bun test
 
 # Start development server (with live reload)
-npm run dev:watch
+bun run dev:watch
 
 # Or start server without watch
-npm run dev
+bun run dev
 ```
 
 ### Linting
@@ -26,13 +26,13 @@ Kloak uses [Biome](https://biomejs.dev) for TypeScript/JavaScript linting and fo
 
 ```bash
 # Check linting (no changes)
-npm run lint:check
+bun run lint:check
 
 # Fix all linting issues
-npm run lint
+bun run lint
 
 # Format code
-npm run format
+bun run format
 ```
 
 ### Docker Development
@@ -49,10 +49,10 @@ docker-compose up
 docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
 
 # Run tests
-docker exec kloak npm test
+docker exec kloak bun test
 
 # Run linting
-docker exec kloak npm run lint:check
+docker exec kloak bun run lint:check
 ```
 
 ### Environment Variables
@@ -69,13 +69,13 @@ Development defaults (set in docker-compose.yml):
 
 | Command | Purpose |
 |---------|---------|
-| `npm test` | Run all tests |
-| `npm run dev` | Start server |
-| `npm run dev:watch` | Start server with live reload |
-| `npm run lint:check` | Check linting |
-| `npm run lint` | Fix linting issues |
-| `npm run format` | Format code |
-| `npm run migrate` | Run database migrations |
+| `bun test` | Run all tests |
+| `bun run dev` | Start server |
+| `bun run dev:watch` | Start server with live reload |
+| `bun run lint:check` | Check linting |
+| `bun run lint` | Fix linting issues |
+| `bun run format` | Format code |
+| `bun run migrate` | Run database migrations |
 
 ### Project Structure
 
