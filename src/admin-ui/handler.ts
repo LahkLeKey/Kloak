@@ -2,10 +2,18 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 
 import type {
   CoreApi,
+  CreateAuthFlowInput,
   CreateDeploymentInput,
   CreateDeploymentVersionInput,
+  RegisterExternalAppInput,
 } from '../core/index.ts';
-import type { DeploymentId, DeploymentStatus } from '../shared/index.ts';
+import type {
+  AuthFlowId,
+  DeploymentId,
+  DeploymentStatus,
+  ExternalAppId,
+  ExternalAppStatus,
+} from '../shared/index.ts';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
 
@@ -59,6 +67,56 @@ export class AdminHandler {
       const { status: newStatus } = body as { status: DeploymentStatus };
       const deployment = await this.core.markDeploymentStatus(params.id as DeploymentId, newStatus);
       return { status: 200, body: deployment };
+    }
+
+    // ── External Apps ─────────────────────────────────────────────────────────
+
+    if (method === 'POST' && path === '/deployments/:id/apps') {
+      const input = body as Omit<RegisterExternalAppInput, 'deploymentId'>;
+      const app = await this.core.registerExternalApp({
+        ...input,
+        deploymentId: params.id as DeploymentId,
+      });
+      return { status: 201, body: app };
+    }
+
+    if (method === 'GET' && path === '/deployments/:id/apps') {
+      const apps = await this.core.listExternalApps(params.id as DeploymentId);
+      return { status: 200, body: apps };
+    }
+
+    if (method === 'GET' && path === '/apps/:appId') {
+      const app = await this.core.getExternalApp(params.appId as ExternalAppId);
+      if (app === null) return { status: 404, body: { error: 'App not found' } };
+      return { status: 200, body: app };
+    }
+
+    if (method === 'PUT' && path === '/apps/:appId/status') {
+      const { status: newStatus } = body as { status: ExternalAppStatus };
+      const app = await this.core.updateExternalAppStatus(params.appId as ExternalAppId, newStatus);
+      return { status: 200, body: app };
+    }
+
+    // ── Auth Flows ─────────────────────────────────────────────────────────────
+
+    if (method === 'POST' && path === '/deployments/:id/flows') {
+      const input = body as Omit<CreateAuthFlowInput, 'deploymentId'>;
+      const flow = await this.core.createAuthFlow({
+        ...input,
+        deploymentId: params.id as DeploymentId,
+      });
+      return { status: 201, body: flow };
+    }
+
+    if (method === 'GET' && path === '/deployments/:id/flows') {
+      const flows = await this.core.listAuthFlows(params.id as DeploymentId);
+      return { status: 200, body: flows };
+    }
+
+    if (method === 'GET' && path === '/flows/:flowId') {
+      const flow = await this.core.getAuthFlow(params.flowId as AuthFlowId);
+      if (flow === null) return { status: 404, body: { error: 'Flow not found' } };
+      return { status: 200, body: flow };
     }
 
     return { status: 404, body: { error: 'Not found' } };

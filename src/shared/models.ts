@@ -49,6 +49,65 @@ export interface SecretSpec {
   readonly source: 'generated' | 'managed' | 'external';
 }
 
+// ─── External App / Multi-Domain Auth ────────────────────────────────────────
+
+export type ExternalAppId = string;
+export type AuthFlowId = string;
+
+/**
+ * An ExternalApp represents a third-party domain or application that delegates
+ * authentication to Kloak. Instead of configuring OAuth separately for every
+ * domain, operators register the app once and Kloak provisions the Keycloak
+ * client and issues credentials centrally.
+ */
+export interface ExternalApp {
+  readonly id: ExternalAppId;
+  readonly deploymentId: DeploymentId;
+  readonly name: string;
+  readonly description?: string;
+  /** The origin domains this app is allowed to redirect to after authentication */
+  readonly allowedOrigins: readonly string[];
+  /** OAuth redirect URIs for this application */
+  readonly redirectUris: readonly string[];
+  /** Scopes this app is permitted to request */
+  readonly scopes: readonly string[];
+  readonly clientId: string;
+  /** Reference to the secret stored in Secrets Manager */
+  readonly clientSecretRef?: string;
+  readonly status: ExternalAppStatus;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export type ExternalAppStatus =
+  | 'pending' // registered, Keycloak client not yet created
+  | 'active' // Keycloak client provisioned, credentials issued
+  | 'suspended' // temporarily disabled, client still exists
+  | 'revoked'; // credentials revoked, client removed
+
+/**
+ * An AuthFlow describes how a specific domain initiates and completes
+ * authentication for users. Maps external domains to ExternalApps.
+ */
+export interface AuthFlow {
+  readonly id: AuthFlowId;
+  readonly deploymentId: DeploymentId;
+  readonly externalAppId: ExternalAppId;
+  readonly domain: string;
+  readonly flowType: AuthFlowType;
+  readonly postLoginRedirectUri: string;
+  readonly postLogoutRedirectUri?: string;
+  readonly idpHint?: string;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+export type AuthFlowType =
+  | 'authorization_code'
+  | 'authorization_code_pkce'
+  | 'client_credentials'
+  | 'device_code';
+
 export interface DesiredStateSnapshot {
   readonly deploymentId: DeploymentId;
   readonly versionId: DeploymentVersionId;

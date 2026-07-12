@@ -34,8 +34,13 @@ function findRoutePattern(path: string): string | null {
   const patterns = [
     '/deployments/:id/versions',
     '/deployments/:id/status',
+    '/deployments/:id/apps',
+    '/deployments/:id/flows',
     '/deployments/:id',
     '/deployments',
+    '/apps/:appId/status',
+    '/apps/:appId',
+    '/flows/:flowId',
   ];
 
   for (const pattern of patterns) {

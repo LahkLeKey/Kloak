@@ -8,9 +8,12 @@
     "bun": ">=1.0.0"
   },
   "scripts": {
-    "test": "bun test",
+    "test": "bun test src/",
+    "test:e2e": "bunx playwright test",
     "dev": "bun run src/admin-ui/cli.ts",
     "dev:watch": "bun --watch run src/admin-ui/cli.ts",
+    "web": "bun run --cwd src/web dev",
+    "storybook": "bun run --cwd src/web storybook",
     "lint": "biome check --write src/",
     "lint:check": "biome check src/",
     "format": "biome format --write src/",
@@ -31,6 +34,8 @@
     "infrastructure"
   ],
   "devDependencies": {
-    "@biomejs/biome": "^2.5.3"
+    "@biomejs/biome": "^2.5.3",
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^26.1.1"
   }
 }

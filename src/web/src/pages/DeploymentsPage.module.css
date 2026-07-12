@@ -1,0 +1,72 @@
+.pageHeader {
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: var(--color-text-sub);
+}
+
+.list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+
+.card:hover {
+  border-color: var(--color-primary);
+  text-decoration: none;
+}
+
+.cardMain {
+  display: flex;
+  flex-direction: column;
+}
+
+.depName {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--color-text);
+}
+
+.customer {
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.state {
+  color: var(--color-muted);
+}
+
+.stateError {
+  color: var(--color-danger);
+}
+
+.empty {
+  padding: 48px;
+  text-align: center;
+  color: var(--color-muted);
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius);
+}

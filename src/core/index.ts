@@ -1,5 +1,7 @@
 import type {
   AuditEvent,
+  AuthFlow,
+  AuthFlowId,
   CustomerId,
   Deployment,
   DeploymentId,
@@ -7,6 +9,9 @@ import type {
   DeploymentVersion,
   DeploymentVersionId,
   DesiredStateSnapshot,
+  ExternalApp,
+  ExternalAppId,
+  ExternalAppStatus,
   ProvisioningReferences,
   ProvisioningTarget,
   ReconciliationRun,
@@ -35,6 +40,31 @@ export interface DeploymentRepository {
   recordDesiredState(snapshot: DesiredStateSnapshot): Promise<void>;
   recordReconciliationRun(run: ReconciliationRun): Promise<void>;
   appendAuditEvent(event: AuditEvent): Promise<void>;
+  saveExternalApp(app: ExternalApp): Promise<void>;
+  getExternalApp(appId: ExternalAppId): Promise<ExternalApp | null>;
+  listExternalApps(deploymentId: DeploymentId): Promise<readonly ExternalApp[]>;
+  saveAuthFlow(flow: AuthFlow): Promise<void>;
+  getAuthFlow(flowId: AuthFlowId): Promise<AuthFlow | null>;
+  listAuthFlows(deploymentId: DeploymentId): Promise<readonly AuthFlow[]>;
+}
+
+export interface RegisterExternalAppInput {
+  readonly deploymentId: DeploymentId;
+  readonly name: string;
+  readonly description?: string;
+  readonly allowedOrigins: readonly string[];
+  readonly redirectUris: readonly string[];
+  readonly scopes: readonly string[];
+}
+
+export interface CreateAuthFlowInput {
+  readonly deploymentId: DeploymentId;
+  readonly externalAppId: ExternalAppId;
+  readonly domain: string;
+  readonly flowType: AuthFlow['flowType'];
+  readonly postLoginRedirectUri: string;
+  readonly postLogoutRedirectUri?: string;
+  readonly idpHint?: string;
 }
 
 export interface CoreApi {
@@ -48,6 +78,15 @@ export interface CoreApi {
     deploymentId: DeploymentId,
     references: ProvisioningReferences
   ): Promise<void>;
+  // External apps
+  registerExternalApp(input: RegisterExternalAppInput): Promise<ExternalApp>;
+  listExternalApps(deploymentId: DeploymentId): Promise<readonly ExternalApp[]>;
+  getExternalApp(appId: ExternalAppId): Promise<ExternalApp | null>;
+  updateExternalAppStatus(appId: ExternalAppId, status: ExternalAppStatus): Promise<ExternalApp>;
+  // Auth flows
+  createAuthFlow(input: CreateAuthFlowInput): Promise<AuthFlow>;
+  listAuthFlows(deploymentId: DeploymentId): Promise<readonly AuthFlow[]>;
+  getAuthFlow(flowId: AuthFlowId): Promise<AuthFlow | null>;
   appendAuditEvent(event: AuditEvent): Promise<void>;
 }
 
@@ -57,6 +96,8 @@ export class InMemoryDeploymentRepository implements DeploymentRepository {
   private readonly desiredStates = new Map<DeploymentVersionId, DesiredStateSnapshot>();
   private readonly reconciliationRuns = new Map<string, ReconciliationRun>();
   private readonly auditEvents = new Map<string, AuditEvent>();
+  private readonly externalApps = new Map<ExternalAppId, ExternalApp>();
+  private readonly authFlows = new Map<AuthFlowId, AuthFlow>();
 
   async listDeployments(): Promise<readonly Deployment[]> {
     return [...this.deployments.values()];
@@ -92,6 +133,30 @@ export class InMemoryDeploymentRepository implements DeploymentRepository {
 
   async appendAuditEvent(event: AuditEvent): Promise<void> {
     this.auditEvents.set(event.id, event);
+  }
+
+  async saveExternalApp(app: ExternalApp): Promise<void> {
+    this.externalApps.set(app.id, app);
+  }
+
+  async getExternalApp(appId: ExternalAppId): Promise<ExternalApp | null> {
+    return this.externalApps.get(appId) ?? null;
+  }
+
+  async listExternalApps(deploymentId: DeploymentId): Promise<readonly ExternalApp[]> {
+    return [...this.externalApps.values()].filter(a => a.deploymentId === deploymentId);
+  }
+
+  async saveAuthFlow(flow: AuthFlow): Promise<void> {
+    this.authFlows.set(flow.id, flow);
+  }
+
+  async getAuthFlow(flowId: AuthFlowId): Promise<AuthFlow | null> {
+    return this.authFlows.get(flowId) ?? null;
+  }
+
+  async listAuthFlows(deploymentId: DeploymentId): Promise<readonly AuthFlow[]> {
+    return [...this.authFlows.values()].filter(f => f.deploymentId === deploymentId);
   }
 }
 
@@ -205,5 +270,71 @@ export class CoreService implements CoreApi {
 
   async appendAuditEvent(event: AuditEvent): Promise<void> {
     await this.repository.appendAuditEvent(event);
+  }
+
+  async registerExternalApp(input: RegisterExternalAppInput): Promise<ExternalApp> {
+    const now = new Date().toISOString();
+    const app: ExternalApp = {
+      id: crypto.randomUUID() as ExternalAppId,
+      deploymentId: input.deploymentId,
+      name: input.name,
+      description: input.description,
+      allowedOrigins: input.allowedOrigins,
+      redirectUris: input.redirectUris,
+      scopes: input.scopes,
+      clientId: `kloak-${input.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
+      status: 'pending',
+      createdAt: now,
+      updatedAt: now,
+    };
+    await this.repository.saveExternalApp(app);
+    return app;
+  }
+
+  async listExternalApps(deploymentId: DeploymentId): Promise<readonly ExternalApp[]> {
+    return this.repository.listExternalApps(deploymentId);
+  }
+
+  async getExternalApp(appId: ExternalAppId): Promise<ExternalApp | null> {
+    return this.repository.getExternalApp(appId);
+  }
+
+  async updateExternalAppStatus(
+    appId: ExternalAppId,
+    status: ExternalAppStatus
+  ): Promise<ExternalApp> {
+    const app = await this.repository.getExternalApp(appId);
+    if (app === null) throw new Error(`ExternalApp ${appId} does not exist.`);
+    const updated: ExternalApp = { ...app, status, updatedAt: new Date().toISOString() };
+    await this.repository.saveExternalApp(updated);
+    return updated;
+  }
+
+  async createAuthFlow(input: CreateAuthFlowInput): Promise<AuthFlow> {
+    const app = await this.repository.getExternalApp(input.externalAppId);
+    if (app === null) throw new Error(`ExternalApp ${input.externalAppId} does not exist.`);
+    const now = new Date().toISOString();
+    const flow: AuthFlow = {
+      id: crypto.randomUUID() as AuthFlowId,
+      deploymentId: input.deploymentId,
+      externalAppId: input.externalAppId,
+      domain: input.domain,
+      flowType: input.flowType,
+      postLoginRedirectUri: input.postLoginRedirectUri,
+      postLogoutRedirectUri: input.postLogoutRedirectUri,
+      idpHint: input.idpHint,
+      createdAt: now,
+      updatedAt: now,
+    };
+    await this.repository.saveAuthFlow(flow);
+    return flow;
+  }
+
+  async listAuthFlows(deploymentId: DeploymentId): Promise<readonly AuthFlow[]> {
+    return this.repository.listAuthFlows(deploymentId);
+  }
+
+  async getAuthFlow(flowId: AuthFlowId): Promise<AuthFlow | null> {
+    return this.repository.getAuthFlow(flowId);
   }
 }
