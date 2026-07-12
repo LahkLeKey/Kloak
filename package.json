@@ -8,8 +8,8 @@
   },
   "scripts": {
     "test": "node --experimental-transform-types --test src/**/*.test.ts",
-    "dev": "PORT=3000 HOST=0.0.0.0 node --experimental-transform-types src/admin-ui/cli.ts",
-    "dev:watch": "PORT=3000 HOST=0.0.0.0 node --watch --experimental-transform-types src/admin-ui/cli.ts",
+    "dev": "node --experimental-transform-types src/admin-ui/cli.ts",
+    "dev:watch": "node --watch --experimental-transform-types src/admin-ui/cli.ts",
     "lint": "biome check --write src/",
     "lint:check": "biome check src/",
     "format": "biome format --write src/",
