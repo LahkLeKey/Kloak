@@ -1,6 +1,32 @@
-import {compare, hash} from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 
-import type {AuditEvent, AuthFlow, AuthFlowId, AuthToken, CustomerId, Deployment, DeploymentId, DeploymentStatus, DeploymentVersion, DeploymentVersionId, DesiredStateSnapshot, ExternalApp, ExternalAppId, ExternalAppStatus, LinkAccountInput, LinkedAccount, LoginInput, OAuthAuthorizeInput, OAuthCallbackInput, ProvisioningReferences, ProvisioningTarget, ReconciliationRun, SignupInput, User, UserId,} from '../shared';
+import type {
+  AuditEvent,
+  AuthFlow,
+  AuthFlowId,
+  AuthToken,
+  CustomerId,
+  Deployment,
+  DeploymentId,
+  DeploymentStatus,
+  DeploymentVersion,
+  DeploymentVersionId,
+  DesiredStateSnapshot,
+  ExternalApp,
+  ExternalAppId,
+  ExternalAppStatus,
+  LinkAccountInput,
+  LinkedAccount,
+  LoginInput,
+  OAuthAuthorizeInput,
+  OAuthCallbackInput,
+  ProvisioningReferences,
+  ProvisioningTarget,
+  ReconciliationRun,
+  SignupInput,
+  User,
+  UserId,
+} from '../shared';
 
 export interface CreateDeploymentInput {
   readonly customerId: CustomerId;
@@ -17,11 +43,9 @@ export interface CreateDeploymentVersionInput {
 
 export interface DeploymentRepository {
   listDeployments(): Promise<readonly Deployment[]>;
-  listDeploymentVersions(deploymentId: DeploymentId):
-      Promise<readonly DeploymentVersion[]>;
-  getDeployment(deploymentId: DeploymentId): Promise<Deployment|null>;
-  getDesiredState(versionId: DeploymentVersionId):
-      Promise<DesiredStateSnapshot|null>;
+  listDeploymentVersions(deploymentId: DeploymentId): Promise<readonly DeploymentVersion[]>;
+  getDeployment(deploymentId: DeploymentId): Promise<Deployment | null>;
+  getDesiredState(versionId: DeploymentVersionId): Promise<DesiredStateSnapshot | null>;
   saveDeployment(deployment: Deployment): Promise<void>;
   deleteDeployment(deploymentId: DeploymentId): Promise<void>;
   saveDeploymentVersion(version: DeploymentVersion): Promise<void>;
@@ -29,15 +53,15 @@ export interface DeploymentRepository {
   recordReconciliationRun(run: ReconciliationRun): Promise<void>;
   appendAuditEvent(event: AuditEvent): Promise<void>;
   saveExternalApp(app: ExternalApp): Promise<void>;
-  getExternalApp(appId: ExternalAppId): Promise<ExternalApp|null>;
+  getExternalApp(appId: ExternalAppId): Promise<ExternalApp | null>;
   listExternalApps(deploymentId: DeploymentId): Promise<readonly ExternalApp[]>;
   saveAuthFlow(flow: AuthFlow): Promise<void>;
-  getAuthFlow(flowId: AuthFlowId): Promise<AuthFlow|null>;
+  getAuthFlow(flowId: AuthFlowId): Promise<AuthFlow | null>;
   listAuthFlows(deploymentId: DeploymentId): Promise<readonly AuthFlow[]>;
   // Users
   saveUser(user: User): Promise<void>;
-  getUser(userId: UserId): Promise<User|null>;
-  getUserByEmail(deploymentId: DeploymentId, email: string): Promise<User|null>;
+  getUser(userId: UserId): Promise<User | null>;
+  getUserByEmail(deploymentId: DeploymentId, email: string): Promise<User | null>;
   listUsers(deploymentId: DeploymentId): Promise<readonly User[]>;
   deleteUser(userId: UserId): Promise<void>;
   linkAccount(userId: UserId, linkedAccount: LinkedAccount): Promise<void>;
@@ -65,69 +89,61 @@ export interface CreateAuthFlowInput {
 
 export interface CoreApi {
   createDeployment(input: CreateDeploymentInput): Promise<Deployment>;
-  createDeploymentVersion(input: CreateDeploymentVersionInput):
-      Promise<DeploymentVersion>;
-  markDeploymentStatus(deploymentId: DeploymentId, status: DeploymentStatus):
-      Promise<Deployment>;
+  createDeploymentVersion(input: CreateDeploymentVersionInput): Promise<DeploymentVersion>;
+  markDeploymentStatus(deploymentId: DeploymentId, status: DeploymentStatus): Promise<Deployment>;
   deleteDeployment(deploymentId: DeploymentId): Promise<void>;
-  getDeployment(deploymentId: DeploymentId): Promise<Deployment|null>;
+  getDeployment(deploymentId: DeploymentId): Promise<Deployment | null>;
   listDeployments(): Promise<readonly Deployment[]>;
   recordReconciliationRun(run: ReconciliationRun): Promise<void>;
   recordProvisioningReferences(
-      deploymentId: DeploymentId,
-      references: ProvisioningReferences): Promise<void>;
+    deploymentId: DeploymentId,
+    references: ProvisioningReferences
+  ): Promise<void>;
   // External apps
   registerExternalApp(input: RegisterExternalAppInput): Promise<ExternalApp>;
   listExternalApps(deploymentId: DeploymentId): Promise<readonly ExternalApp[]>;
-  getExternalApp(appId: ExternalAppId): Promise<ExternalApp|null>;
-  updateExternalAppStatus(appId: ExternalAppId, status: ExternalAppStatus):
-      Promise<ExternalApp>;
+  getExternalApp(appId: ExternalAppId): Promise<ExternalApp | null>;
+  updateExternalAppStatus(appId: ExternalAppId, status: ExternalAppStatus): Promise<ExternalApp>;
   // Auth flows
   createAuthFlow(input: CreateAuthFlowInput): Promise<AuthFlow>;
   listAuthFlows(deploymentId: DeploymentId): Promise<readonly AuthFlow[]>;
-  getAuthFlow(flowId: AuthFlowId): Promise<AuthFlow|null>;
+  getAuthFlow(flowId: AuthFlowId): Promise<AuthFlow | null>;
   // User authentication
   signup(input: SignupInput): Promise<User>;
-  login(input: LoginInput): Promise<{user: User; token: AuthToken}>;
-  getUser(userId: UserId): Promise<User|null>;
+  login(input: LoginInput): Promise<{ user: User; token: AuthToken }>;
+  getUser(userId: UserId): Promise<User | null>;
   listUsers(deploymentId: DeploymentId): Promise<readonly User[]>;
   linkAccount(userId: UserId, input: LinkAccountInput): Promise<User>;
   unlinkAccount(userId: UserId, providerId: string): Promise<User>;
   // OAuth flows
   getOAuthAuthorizationUrl(input: OAuthAuthorizeInput): Promise<string>;
-  handleOAuthCallback(input: OAuthCallbackInput):
-      Promise<{user: User; token: AuthToken}>;
+  handleOAuthCallback(input: OAuthCallbackInput): Promise<{ user: User; token: AuthToken }>;
   appendAuditEvent(event: AuditEvent): Promise<void>;
 }
 
 export class InMemoryDeploymentRepository implements DeploymentRepository {
   private readonly deployments = new Map<DeploymentId, Deployment>();
   private readonly versions = new Map<DeploymentVersionId, DeploymentVersion>();
-  private readonly desiredStates =
-      new Map<DeploymentVersionId, DesiredStateSnapshot>();
+  private readonly desiredStates = new Map<DeploymentVersionId, DesiredStateSnapshot>();
   private readonly reconciliationRuns = new Map<string, ReconciliationRun>();
   private readonly auditEvents = new Map<string, AuditEvent>();
   private readonly externalApps = new Map<ExternalAppId, ExternalApp>();
   private readonly authFlows = new Map<AuthFlowId, AuthFlow>();
   private readonly users = new Map<UserId, User>();
-  private readonly oauthProviders = new Map<string, Record<string, string>>();
 
   async listDeployments(): Promise<readonly Deployment[]> {
     return [...this.deployments.values()];
   }
 
-  async listDeploymentVersions(deploymentId: DeploymentId):
-      Promise<readonly DeploymentVersion[]> {
-    return [...this.versions.values()].filter(
-        version => version.deploymentId === deploymentId);
+  async listDeploymentVersions(deploymentId: DeploymentId): Promise<readonly DeploymentVersion[]> {
+    return [...this.versions.values()].filter(version => version.deploymentId === deploymentId);
   }
 
-  async getDeployment(deploymentId: DeploymentId): Promise<Deployment|null> {
+  async getDeployment(deploymentId: DeploymentId): Promise<Deployment | null> {
     return this.deployments.get(deploymentId) ?? null;
   }
 
-  async getDesiredState(versionId: DeploymentVersionId):
-      Promise<DesiredStateSnapshot|null> {
+  async getDesiredState(versionId: DeploymentVersionId): Promise<DesiredStateSnapshot | null> {
     return this.desiredStates.get(versionId) ?? null;
   }
 
@@ -159,43 +175,37 @@ export class InMemoryDeploymentRepository implements DeploymentRepository {
     this.externalApps.set(app.id, app);
   }
 
-  async getExternalApp(appId: ExternalAppId): Promise<ExternalApp|null> {
+  async getExternalApp(appId: ExternalAppId): Promise<ExternalApp | null> {
     return this.externalApps.get(appId) ?? null;
   }
 
-  async listExternalApps(deploymentId: DeploymentId):
-      Promise<readonly ExternalApp[]> {
-    return [...this.externalApps.values()].filter(
-        a => a.deploymentId === deploymentId);
+  async listExternalApps(deploymentId: DeploymentId): Promise<readonly ExternalApp[]> {
+    return [...this.externalApps.values()].filter(a => a.deploymentId === deploymentId);
   }
 
   async saveAuthFlow(flow: AuthFlow): Promise<void> {
     this.authFlows.set(flow.id, flow);
   }
 
-  async getAuthFlow(flowId: AuthFlowId): Promise<AuthFlow|null> {
+  async getAuthFlow(flowId: AuthFlowId): Promise<AuthFlow | null> {
     return this.authFlows.get(flowId) ?? null;
   }
 
-  async listAuthFlows(deploymentId: DeploymentId):
-      Promise<readonly AuthFlow[]> {
-    return [...this.authFlows.values()].filter(
-        f => f.deploymentId === deploymentId);
+  async listAuthFlows(deploymentId: DeploymentId): Promise<readonly AuthFlow[]> {
+    return [...this.authFlows.values()].filter(f => f.deploymentId === deploymentId);
   }
 
   async saveUser(user: User): Promise<void> {
     this.users.set(user.id, user);
   }
 
-  async getUser(userId: UserId): Promise<User|null> {
+  async getUser(userId: UserId): Promise<User | null> {
     return this.users.get(userId) ?? null;
   }
 
-  async getUserByEmail(deploymentId: DeploymentId, email: string):
-      Promise<User|null> {
+  async getUserByEmail(deploymentId: DeploymentId, email: string): Promise<User | null> {
     for (const user of this.users.values()) {
-      if (user.deploymentId === deploymentId &&
-          user.email.toLowerCase() === email.toLowerCase()) {
+      if (user.deploymentId === deploymentId && user.email.toLowerCase() === email.toLowerCase()) {
         return user;
       }
     }
@@ -203,16 +213,14 @@ export class InMemoryDeploymentRepository implements DeploymentRepository {
   }
 
   async listUsers(deploymentId: DeploymentId): Promise<readonly User[]> {
-    return [...this.users.values()].filter(
-        u => u.deploymentId === deploymentId);
+    return [...this.users.values()].filter(u => u.deploymentId === deploymentId);
   }
 
   async deleteUser(userId: UserId): Promise<void> {
     this.users.delete(userId);
   }
 
-  async linkAccount(userId: UserId, linkedAccount: LinkedAccount):
-      Promise<void> {
+  async linkAccount(userId: UserId, linkedAccount: LinkedAccount): Promise<void> {
     const user = await this.getUser(userId);
     if (user === null) throw new Error(`User ${userId} not found`);
     const updated: User = {
@@ -228,8 +236,7 @@ export class InMemoryDeploymentRepository implements DeploymentRepository {
     if (user === null) throw new Error(`User ${userId} not found`);
     const updated: User = {
       ...user,
-      linkedAccounts:
-          user.linkedAccounts.filter(la => la.provider !== providerId),
+      linkedAccounts: user.linkedAccounts.filter(la => la.provider !== providerId),
       updatedAt: new Date().toISOString(),
     };
     await this.saveUser(updated);
@@ -238,9 +245,6 @@ export class InMemoryDeploymentRepository implements DeploymentRepository {
 
 // ── Deployment Status Transition State Machine
 // ──────────────────────────────────
-
-type DeploymentStatus = 'draft'|'provisioning'|'healthy'|'drifted'|'repairing'|
-    'failed'|'decommissioned';
 
 interface StateTransitions {
   readonly [key: string]: readonly DeploymentStatus[];
@@ -256,14 +260,12 @@ const VALID_TRANSITIONS: StateTransitions = {
   decommissioned: [],
 };
 
-function canTransitionTo(
-    from: DeploymentStatus, to: DeploymentStatus): boolean {
+function canTransitionTo(from: DeploymentStatus, to: DeploymentStatus): boolean {
   const allowed = VALID_TRANSITIONS[from] ?? [];
   return allowed.includes(to);
 }
 
-function getAvailableTransitions(status: DeploymentStatus):
-    readonly DeploymentStatus[] {
+function getAvailableTransitions(status: DeploymentStatus): readonly DeploymentStatus[] {
   return VALID_TRANSITIONS[status] ?? [];
 }
 
@@ -288,15 +290,13 @@ export class CoreService implements CoreApi {
     return deployment;
   }
 
-  async createDeploymentVersion(input: CreateDeploymentVersionInput):
-      Promise<DeploymentVersion> {
+  async createDeploymentVersion(input: CreateDeploymentVersionInput): Promise<DeploymentVersion> {
     const deployment = await this.repository.getDeployment(input.deploymentId);
     if (deployment === null) {
       throw new Error(`Deployment ${input.deploymentId} does not exist.`);
     }
 
-    const existingVersions =
-        await this.repository.listDeploymentVersions(input.deploymentId);
+    const existingVersions = await this.repository.listDeploymentVersions(input.deploymentId);
     const versionNumber = existingVersions.length + 1;
 
     const version: DeploymentVersion = {
@@ -325,8 +325,7 @@ export class CoreService implements CoreApi {
     await this.repository.saveDeployment({
       ...deployment,
       desiredVersionId: version.id,
-      status: deployment.currentVersionId === undefined ? 'provisioning' :
-                                                          'repairing',
+      status: deployment.currentVersionId === undefined ? 'provisioning' : 'repairing',
       updatedAt: new Date().toISOString(),
     });
 
@@ -334,8 +333,9 @@ export class CoreService implements CoreApi {
   }
 
   async markDeploymentStatus(
-      deploymentId: DeploymentId,
-      status: DeploymentStatus): Promise<Deployment> {
+    deploymentId: DeploymentId,
+    status: DeploymentStatus
+  ): Promise<Deployment> {
     const deployment = await this.repository.getDeployment(deploymentId);
     if (deployment === null) {
       throw new Error(`Deployment ${deploymentId} does not exist.`);
@@ -343,9 +343,9 @@ export class CoreService implements CoreApi {
 
     if (!canTransitionTo(deployment.status, status)) {
       throw new Error(
-          `Cannot transition from ${deployment.status} to ${status}. ` +
-          `Valid transitions: ${
-              getAvailableTransitions(deployment.status).join(', ')}`);
+        `Cannot transition from ${deployment.status} to ${status}. ` +
+          `Valid transitions: ${getAvailableTransitions(deployment.status).join(', ')}`
+      );
     }
 
     const updatedDeployment: Deployment = {
@@ -367,7 +367,7 @@ export class CoreService implements CoreApi {
     await this.repository.deleteDeployment(deploymentId);
   }
 
-  async getDeployment(deploymentId: DeploymentId): Promise<Deployment|null> {
+  async getDeployment(deploymentId: DeploymentId): Promise<Deployment | null> {
     return this.repository.getDeployment(deploymentId);
   }
 
@@ -380,8 +380,9 @@ export class CoreService implements CoreApi {
   }
 
   async recordProvisioningReferences(
-      deploymentId: DeploymentId,
-      references: ProvisioningReferences): Promise<void> {
+    deploymentId: DeploymentId,
+    references: ProvisioningReferences
+  ): Promise<void> {
     const deployment = await this.repository.getDeployment(deploymentId);
     if (deployment === null) {
       throw new Error(`Deployment ${deploymentId} does not exist.`);
@@ -398,8 +399,7 @@ export class CoreService implements CoreApi {
     await this.repository.appendAuditEvent(event);
   }
 
-  async registerExternalApp(input: RegisterExternalAppInput):
-      Promise<ExternalApp> {
+  async registerExternalApp(input: RegisterExternalAppInput): Promise<ExternalApp> {
     const now = new Date().toISOString();
     const app: ExternalApp = {
       id: crypto.randomUUID() as ExternalAppId,
@@ -409,8 +409,7 @@ export class CoreService implements CoreApi {
       allowedOrigins: input.allowedOrigins,
       redirectUris: input.redirectUris,
       scopes: input.scopes,
-      clientId: `kloak-${input.name.toLowerCase().replace(/\s+/g, '-')}-${
-          Date.now()}`,
+      clientId: `kloak-${input.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
       status: 'pending',
       createdAt: now,
       updatedAt: now,
@@ -419,29 +418,28 @@ export class CoreService implements CoreApi {
     return app;
   }
 
-  async listExternalApps(deploymentId: DeploymentId):
-      Promise<readonly ExternalApp[]> {
+  async listExternalApps(deploymentId: DeploymentId): Promise<readonly ExternalApp[]> {
     return this.repository.listExternalApps(deploymentId);
   }
 
-  async getExternalApp(appId: ExternalAppId): Promise<ExternalApp|null> {
+  async getExternalApp(appId: ExternalAppId): Promise<ExternalApp | null> {
     return this.repository.getExternalApp(appId);
   }
 
   async updateExternalAppStatus(
-      appId: ExternalAppId, status: ExternalAppStatus): Promise<ExternalApp> {
+    appId: ExternalAppId,
+    status: ExternalAppStatus
+  ): Promise<ExternalApp> {
     const app = await this.repository.getExternalApp(appId);
     if (app === null) throw new Error(`ExternalApp ${appId} does not exist.`);
-    const updated:
-        ExternalApp = {...app, status, updatedAt: new Date().toISOString()};
+    const updated: ExternalApp = { ...app, status, updatedAt: new Date().toISOString() };
     await this.repository.saveExternalApp(updated);
     return updated;
   }
 
   async createAuthFlow(input: CreateAuthFlowInput): Promise<AuthFlow> {
     const app = await this.repository.getExternalApp(input.externalAppId);
-    if (app === null)
-      throw new Error(`ExternalApp ${input.externalAppId} does not exist.`);
+    if (app === null) throw new Error(`ExternalApp ${input.externalAppId} does not exist.`);
     const now = new Date().toISOString();
     const flow: AuthFlow = {
       id: crypto.randomUUID() as AuthFlowId,
@@ -459,25 +457,22 @@ export class CoreService implements CoreApi {
     return flow;
   }
 
-  async listAuthFlows(deploymentId: DeploymentId):
-      Promise<readonly AuthFlow[]> {
+  async listAuthFlows(deploymentId: DeploymentId): Promise<readonly AuthFlow[]> {
     return this.repository.listAuthFlows(deploymentId);
   }
 
-  async getAuthFlow(flowId: AuthFlowId): Promise<AuthFlow|null> {
+  async getAuthFlow(flowId: AuthFlowId): Promise<AuthFlow | null> {
     return this.repository.getAuthFlow(flowId);
   }
 
   async signup(input: SignupInput): Promise<User> {
-    const existing =
-        await this.repository.getUserByEmail(input.deploymentId, input.email);
+    const existing = await this.repository.getUserByEmail(input.deploymentId, input.email);
     if (existing !== null) {
       throw new Error(`User with email ${input.email} already exists`);
     }
 
     // TODO: Hash password with bcrypt
-    const passwordHash =
-        input.password ? await this.hashPassword(input.password) : undefined;
+    const passwordHash = input.password ? await this.hashPassword(input.password) : undefined;
 
     const now = new Date().toISOString();
     const userId = crypto.randomUUID() as UserId;
@@ -508,9 +503,8 @@ export class CoreService implements CoreApi {
     return user;
   }
 
-  async login(input: LoginInput): Promise<{user: User; token: AuthToken}> {
-    const user =
-        await this.repository.getUserByEmail(input.deploymentId, input.email);
+  async login(input: LoginInput): Promise<{ user: User; token: AuthToken }> {
+    const user = await this.repository.getUserByEmail(input.deploymentId, input.email);
     if (user === null) {
       throw new Error(`User with email ${input.email} not found`);
     }
@@ -520,8 +514,7 @@ export class CoreService implements CoreApi {
     }
 
     // TODO: Verify password with bcrypt
-    const passwordValid =
-        await this.verifyPassword(input.password, user.passwordHash);
+    const passwordValid = await this.verifyPassword(input.password, user.passwordHash);
     if (!passwordValid) {
       throw new Error('Invalid password');
     }
@@ -534,10 +527,10 @@ export class CoreService implements CoreApi {
     };
     await this.repository.saveUser(updatedUser);
 
-    return {user: updatedUser, token};
+    return { user: updatedUser, token };
   }
 
-  async getUser(userId: UserId): Promise<User|null> {
+  async getUser(userId: UserId): Promise<User | null> {
     return this.repository.getUser(userId);
   }
 
@@ -549,11 +542,9 @@ export class CoreService implements CoreApi {
     const user = await this.repository.getUser(userId);
     if (user === null) throw new Error(`User ${userId} not found`);
 
-    const existing =
-        user.linkedAccounts.find(la => la.provider === input.provider);
+    const existing = user.linkedAccounts.find(la => la.provider === input.provider);
     if (existing !== undefined) {
-      throw new Error(
-          `User already has a linked account for ${input.provider}`);
+      throw new Error(`User already has a linked account for ${input.provider}`);
     }
 
     const linkedAccount: LinkedAccount = {
@@ -597,14 +588,12 @@ export class CoreService implements CoreApi {
     return `${config.authorizationUrl}?${params.toString()}`;
   }
 
-  async handleOAuthCallback(input: OAuthCallbackInput):
-      Promise<{user: User; token: AuthToken}> {
+  async handleOAuthCallback(input: OAuthCallbackInput): Promise<{ user: User; token: AuthToken }> {
     // TODO: In production, validate state and exchange code for token via HTTP
     // For MVP, we'll use the code as a mock token and look up/create the user
     const mockUserInfo = this.parseMockOAuthCode(input.code, input.provider);
 
-    let user = await this.repository.getUserByEmail(
-        input.deploymentId, mockUserInfo.email);
+    let user = await this.repository.getUserByEmail(input.deploymentId, mockUserInfo.email);
 
     if (user === null) {
       // Create new user from OAuth provider
@@ -637,8 +626,7 @@ export class CoreService implements CoreApi {
       await this.repository.saveUser(user);
     } else {
       // Link OAuth provider to existing user if not already linked
-      const existing =
-          user.linkedAccounts.find(la => la.provider === input.provider);
+      const existing = user.linkedAccounts.find(la => la.provider === input.provider);
 
       if (!existing) {
         const now = new Date().toISOString();
@@ -654,16 +642,19 @@ export class CoreService implements CoreApi {
         };
 
         await this.repository.linkAccount(user.id, linkedAccount);
-        user = (await this.repository.getUser(user.id))!;
+        const refreshed = await this.repository.getUser(user.id);
+        if (refreshed !== null) user = refreshed;
       }
     }
 
     const token = this.generateToken(user);
-    return {user, token};
+    return { user, token };
   }
 
   private getOAuthConfig(provider: string): {
-    clientId: string; clientSecret: string; scopes: string[];
+    clientId: string;
+    clientSecret: string;
+    scopes: string[];
     authorizationUrl: string;
     tokenUrl: string;
     userInfoUrl: string;
@@ -697,8 +688,12 @@ export class CoreService implements CoreApi {
     throw new Error(`Unknown OAuth provider: ${provider}`);
   }
 
-  private parseMockOAuthCode(code: string, provider: string): {
-    providerId: string; email: string;
+  private parseMockOAuthCode(
+    code: string,
+    provider: string
+  ): {
+    providerId: string;
+    email: string;
     displayName?: string;
     avatarUrl?: string;
   } {
@@ -717,8 +712,7 @@ export class CoreService implements CoreApi {
     return await hash(password, 10);
   }
 
-  private async verifyPassword(password: string, hash: string):
-      Promise<boolean> {
+  private async verifyPassword(password: string, hash: string): Promise<boolean> {
     return await compare(password, hash);
   }
 
@@ -730,7 +724,7 @@ export class CoreService implements CoreApi {
       email: user.email,
       displayName: user.displayName,
       iat: now,
-      exp: now + 24 * 60 * 60,  // 24 hours
+      exp: now + 24 * 60 * 60, // 24 hours
     };
   }
 }

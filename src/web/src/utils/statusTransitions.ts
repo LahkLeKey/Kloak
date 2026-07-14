@@ -1,4 +1,4 @@
-import type {Deployment} from '../api';
+import type { Deployment } from '../api';
 
 type Status = Deployment['status'];
 

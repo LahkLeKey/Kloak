@@ -1,18 +1,18 @@
-import {describe, expect, it} from 'bun:test';
+import { describe, expect, it } from 'bun:test';
 
-import type {CreateDeploymentInput, DeploymentId, DeploymentRepository} from '../shared';
+import type { CreateDeploymentInput, DeploymentId, DeploymentRepository } from '../shared/index.ts';
 
-import {CoreService, InMemoryDeploymentRepository} from './index';
+import { CoreService, InMemoryDeploymentRepository } from './index.ts';
 
 function makeCore() {
   const repository: DeploymentRepository = new InMemoryDeploymentRepository();
   const core = new CoreService(repository);
-  return {core, repository};
+  return { core, repository };
 }
 
 describe('Deployment creation and deletion', () => {
   it('creates a new deployment with specified configuration', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const input: CreateDeploymentInput = {
       customerId: 'test-customer',
       name: 'test-deployment',
@@ -36,7 +36,7 @@ describe('Deployment creation and deletion', () => {
   });
 
   it('lists deployments in the system', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const input1: CreateDeploymentInput = {
       customerId: 'customer-1',
       name: 'deployment-1',
@@ -68,7 +68,7 @@ describe('Deployment creation and deletion', () => {
   });
 
   it('deletes a deployment by id', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const input: CreateDeploymentInput = {
       customerId: 'to-delete',
       name: 'doomed-deployment',
@@ -90,10 +90,10 @@ describe('Deployment creation and deletion', () => {
   });
 
   it('throws when deleting non-existent deployment', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const fakeId = 'non-existent-id' as DeploymentId;
 
-    let error: Error|null = null;
+    let error: Error | null = null;
     try {
       await core.deleteDeployment(fakeId);
     } catch (e) {
@@ -107,7 +107,7 @@ describe('Deployment creation and deletion', () => {
 
 describe('Deployment status transitions', () => {
   it('allows draft to transition to provisioning', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const input: CreateDeploymentInput = {
       customerId: 'test',
       name: 'test-deployment',
@@ -120,14 +120,13 @@ describe('Deployment status transitions', () => {
     };
 
     const deployment = await core.createDeployment(input);
-    const updated = await core.markDeploymentStatus(
-        deployment.id as DeploymentId, 'provisioning');
+    const updated = await core.markDeploymentStatus(deployment.id as DeploymentId, 'provisioning');
 
     expect(updated.status).toBe('provisioning');
   });
 
   it('allows draft to transition to decommissioned', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const input: CreateDeploymentInput = {
       customerId: 'test',
       name: 'test-deployment',
@@ -141,13 +140,15 @@ describe('Deployment status transitions', () => {
 
     const deployment = await core.createDeployment(input);
     const updated = await core.markDeploymentStatus(
-        deployment.id as DeploymentId, 'decommissioned');
+      deployment.id as DeploymentId,
+      'decommissioned'
+    );
 
     expect(updated.status).toBe('decommissioned');
   });
 
   it('allows provisioning to transition to healthy', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const input: CreateDeploymentInput = {
       customerId: 'test',
       name: 'test-deployment',
@@ -160,16 +161,14 @@ describe('Deployment status transitions', () => {
     };
 
     const deployment = await core.createDeployment(input);
-    let updated = await core.markDeploymentStatus(
-        deployment.id as DeploymentId, 'provisioning');
-    updated =
-        await core.markDeploymentStatus(updated.id as DeploymentId, 'healthy');
+    let updated = await core.markDeploymentStatus(deployment.id as DeploymentId, 'provisioning');
+    updated = await core.markDeploymentStatus(updated.id as DeploymentId, 'healthy');
 
     expect(updated.status).toBe('healthy');
   });
 
   it('allows provisioning to transition to failed', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const input: CreateDeploymentInput = {
       customerId: 'test',
       name: 'test-deployment',
@@ -182,16 +181,14 @@ describe('Deployment status transitions', () => {
     };
 
     const deployment = await core.createDeployment(input);
-    let updated = await core.markDeploymentStatus(
-        deployment.id as DeploymentId, 'provisioning');
-    updated =
-        await core.markDeploymentStatus(updated.id as DeploymentId, 'failed');
+    let updated = await core.markDeploymentStatus(deployment.id as DeploymentId, 'provisioning');
+    updated = await core.markDeploymentStatus(updated.id as DeploymentId, 'failed');
 
     expect(updated.status).toBe('failed');
   });
 
   it('allows healthy to transition to drifted', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const input: CreateDeploymentInput = {
       customerId: 'test',
       name: 'test-deployment',
@@ -204,18 +201,15 @@ describe('Deployment status transitions', () => {
     };
 
     const deployment = await core.createDeployment(input);
-    let updated = await core.markDeploymentStatus(
-        deployment.id as DeploymentId, 'provisioning');
-    updated =
-        await core.markDeploymentStatus(updated.id as DeploymentId, 'healthy');
-    updated =
-        await core.markDeploymentStatus(updated.id as DeploymentId, 'drifted');
+    let updated = await core.markDeploymentStatus(deployment.id as DeploymentId, 'provisioning');
+    updated = await core.markDeploymentStatus(updated.id as DeploymentId, 'healthy');
+    updated = await core.markDeploymentStatus(updated.id as DeploymentId, 'drifted');
 
     expect(updated.status).toBe('drifted');
   });
 
   it('allows drifted to transition to repairing', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const input: CreateDeploymentInput = {
       customerId: 'test',
       name: 'test-deployment',
@@ -228,20 +222,16 @@ describe('Deployment status transitions', () => {
     };
 
     const deployment = await core.createDeployment(input);
-    let updated = await core.markDeploymentStatus(
-        deployment.id as DeploymentId, 'provisioning');
-    updated =
-        await core.markDeploymentStatus(updated.id as DeploymentId, 'healthy');
-    updated =
-        await core.markDeploymentStatus(updated.id as DeploymentId, 'drifted');
-    updated = await core.markDeploymentStatus(
-        updated.id as DeploymentId, 'repairing');
+    let updated = await core.markDeploymentStatus(deployment.id as DeploymentId, 'provisioning');
+    updated = await core.markDeploymentStatus(updated.id as DeploymentId, 'healthy');
+    updated = await core.markDeploymentStatus(updated.id as DeploymentId, 'drifted');
+    updated = await core.markDeploymentStatus(updated.id as DeploymentId, 'repairing');
 
     expect(updated.status).toBe('repairing');
   });
 
   it('allows repairing to transition back to healthy', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const input: CreateDeploymentInput = {
       customerId: 'test',
       name: 'test-deployment',
@@ -254,22 +244,17 @@ describe('Deployment status transitions', () => {
     };
 
     const deployment = await core.createDeployment(input);
-    let updated = await core.markDeploymentStatus(
-        deployment.id as DeploymentId, 'provisioning');
-    updated =
-        await core.markDeploymentStatus(updated.id as DeploymentId, 'healthy');
-    updated =
-        await core.markDeploymentStatus(updated.id as DeploymentId, 'drifted');
-    updated = await core.markDeploymentStatus(
-        updated.id as DeploymentId, 'repairing');
-    updated =
-        await core.markDeploymentStatus(updated.id as DeploymentId, 'healthy');
+    let updated = await core.markDeploymentStatus(deployment.id as DeploymentId, 'provisioning');
+    updated = await core.markDeploymentStatus(updated.id as DeploymentId, 'healthy');
+    updated = await core.markDeploymentStatus(updated.id as DeploymentId, 'drifted');
+    updated = await core.markDeploymentStatus(updated.id as DeploymentId, 'repairing');
+    updated = await core.markDeploymentStatus(updated.id as DeploymentId, 'healthy');
 
     expect(updated.status).toBe('healthy');
   });
 
   it('rejects invalid status transitions', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const input: CreateDeploymentInput = {
       customerId: 'test',
       name: 'test-deployment',
@@ -283,7 +268,7 @@ describe('Deployment status transitions', () => {
 
     const deployment = await core.createDeployment(input);
 
-    let error: Error|null = null;
+    let error: Error | null = null;
     try {
       await core.markDeploymentStatus(deployment.id as DeploymentId, 'healthy');
     } catch (e) {
@@ -295,7 +280,7 @@ describe('Deployment status transitions', () => {
   });
 
   it('rejects transitions from decommissioned status', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const input: CreateDeploymentInput = {
       customerId: 'test',
       name: 'test-deployment',
@@ -308,13 +293,14 @@ describe('Deployment status transitions', () => {
     };
 
     const deployment = await core.createDeployment(input);
-    let updated = await core.markDeploymentStatus(
-        deployment.id as DeploymentId, 'decommissioned');
+    const updated = await core.markDeploymentStatus(
+      deployment.id as DeploymentId,
+      'decommissioned'
+    );
 
-    let error: Error|null = null;
+    let error: Error | null = null;
     try {
-      await core.markDeploymentStatus(
-          updated.id as DeploymentId, 'provisioning');
+      await core.markDeploymentStatus(updated.id as DeploymentId, 'provisioning');
     } catch (e) {
       error = e as Error;
     }
@@ -324,7 +310,7 @@ describe('Deployment status transitions', () => {
   });
 
   it('updates the updatedAt timestamp when status changes', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const input: CreateDeploymentInput = {
       customerId: 'test',
       name: 'test-deployment',
@@ -341,11 +327,9 @@ describe('Deployment status transitions', () => {
 
     await new Promise(resolve => setTimeout(resolve, 10));
 
-    const updated = await core.markDeploymentStatus(
-        deployment.id as DeploymentId, 'provisioning');
+    const updated = await core.markDeploymentStatus(deployment.id as DeploymentId, 'provisioning');
 
     expect(updated.updatedAt).not.toBe(initialTime);
-    expect(new Date(updated.updatedAt).getTime())
-        .toBeGreaterThan(new Date(initialTime).getTime());
+    expect(new Date(updated.updatedAt).getTime()).toBeGreaterThan(new Date(initialTime).getTime());
   });
 });

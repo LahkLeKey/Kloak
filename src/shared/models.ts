@@ -40,13 +40,13 @@ export interface InfrastructureDesiredState {
 
 export interface DnsRecord {
   readonly name: string;
-  readonly type: 'A'|'AAAA'|'CNAME'|'TXT';
+  readonly type: 'A' | 'AAAA' | 'CNAME' | 'TXT';
   readonly value: string;
 }
 
 export interface SecretSpec {
   readonly name: string;
-  readonly source: 'generated'|'managed'|'external';
+  readonly source: 'generated' | 'managed' | 'external';
 }
 
 // ─── External App / Multi-Domain Auth ────────────────────────────────────────
@@ -82,10 +82,10 @@ export interface ExternalApp {
 }
 
 export type ExternalAppStatus =
-    |'pending'    // registered, Keycloak client not yet created
-    |'active'     // Keycloak client provisioned, credentials issued
-    |'suspended'  // temporarily disabled, client still exists
-    |'revoked';   // credentials revoked, client removed
+  | 'pending' // registered, Keycloak client not yet created
+  | 'active' // Keycloak client provisioned, credentials issued
+  | 'suspended' // temporarily disabled, client still exists
+  | 'revoked'; // credentials revoked, client removed
 
 /**
  * An AuthFlow describes how a specific domain initiates and completes
@@ -104,8 +104,11 @@ export interface AuthFlow {
   readonly updatedAt: string;
 }
 
-export type AuthFlowType =|'authorization_code'|'authorization_code_pkce'|
-    'client_credentials'|'device_code';
+export type AuthFlowType =
+  | 'authorization_code'
+  | 'authorization_code_pkce'
+  | 'client_credentials'
+  | 'device_code';
 
 export interface DesiredStateSnapshot {
   readonly deploymentId: DeploymentId;
@@ -114,8 +117,14 @@ export interface DesiredStateSnapshot {
   readonly infrastructure: InfrastructureDesiredState;
 }
 
-export type DeploymentStatus =|'draft'|'provisioning'|'healthy'|'drifted'|
-    'repairing'|'failed'|'decommissioned';
+export type DeploymentStatus =
+  | 'draft'
+  | 'provisioning'
+  | 'healthy'
+  | 'drifted'
+  | 'repairing'
+  | 'failed'
+  | 'decommissioned';
 
 export interface Deployment {
   readonly id: DeploymentId;
@@ -140,17 +149,17 @@ export interface DeploymentVersion {
   readonly createdAt: string;
 }
 
-export type DriftSeverity = 'info'|'warning'|'critical';
+export type DriftSeverity = 'info' | 'warning' | 'critical';
 
 export interface DriftFinding {
-  readonly scope: 'keycloak'|'infrastructure';
+  readonly scope: 'keycloak' | 'infrastructure';
   readonly path: string;
   readonly expected: unknown;
   readonly actual: unknown;
   readonly severity: DriftSeverity;
 }
 
-export type ReconciliationStatus = 'running'|'no-op'|'repaired'|'failed';
+export type ReconciliationStatus = 'running' | 'no-op' | 'repaired' | 'failed';
 
 export interface ReconciliationRun {
   readonly id: ReconciliationRunId;
@@ -180,7 +189,7 @@ export type UserId = string;
 /**
  * Account provider types that users can link
  */
-export type AccountProviderType = 'email'|'github'|'gmail';
+export type AccountProviderType = 'email' | 'github' | 'gmail';
 
 /**
  * A LinkedAccount represents an external identity (GitHub, Gmail, etc.)
@@ -223,7 +232,7 @@ export interface User {
   readonly lastLoginAt?: string;
 }
 
-export type UserStatus = 'active'|'suspended'|'deleted';
+export type UserStatus = 'active' | 'suspended' | 'deleted';
 
 /**
  * Input for creating a new user account

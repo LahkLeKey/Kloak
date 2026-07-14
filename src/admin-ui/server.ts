@@ -36,11 +36,19 @@ function findRoutePattern(path: string): string | null {
     '/deployments/:id/status',
     '/deployments/:id/apps',
     '/deployments/:id/flows',
+    '/deployments/:id/users',
     '/deployments/:id',
     '/deployments',
     '/apps/:appId/status',
     '/apps/:appId',
     '/flows/:flowId',
+    '/auth/signup',
+    '/auth/login',
+    '/users/:userId/link-account/:provider',
+    '/users/:userId/link-account',
+    '/users/:userId',
+    '/oauth/authorize/:provider',
+    '/oauth/callback/:provider',
   ];
 
   for (const pattern of patterns) {

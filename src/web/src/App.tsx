@@ -10,18 +10,18 @@ import { RegisterAppPage } from './pages/RegisterAppPage';
 import { SignupPage } from './pages/SignupPage';
 
 export function App() {
-    return (
-        <Layout>
-            <Routes>
-                <Route path="/" element={<DeploymentsPage />} />
-                <Route path="/docs" element={<DocsPage />} />
-                <Route path="/deployments/new" element={<DeploymentCreationPage />} />
-                <Route path="/deployments/:id" element={<DeploymentDetailPage />} />
-                <Route path="/deployments/:id/apps/new" element={<RegisterAppPage />} />
-                <Route path="/auth/login" element={<LoginPage />} />
-                <Route path="/auth/signup" element={<SignupPage />} />
-                <Route path="/account" element={<AccountPage />} />
-            </Routes>
-        </Layout>
-    );
+  return (
+    <Layout>
+      <Routes>
+        <Route path="/" element={<DeploymentsPage />} />
+        <Route path="/docs" element={<DocsPage />} />
+        <Route path="/deployments/new" element={<DeploymentCreationPage />} />
+        <Route path="/deployments/:id" element={<DeploymentDetailPage />} />
+        <Route path="/deployments/:id/apps/new" element={<RegisterAppPage />} />
+        <Route path="/auth/login" element={<LoginPage />} />
+        <Route path="/auth/signup" element={<SignupPage />} />
+        <Route path="/account" element={<AccountPage />} />
+      </Routes>
+    </Layout>
+  );
 }

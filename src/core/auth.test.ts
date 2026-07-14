@@ -1,16 +1,23 @@
-import {describe, expect, test} from 'bun:test';
+import { describe, expect, test } from 'bun:test';
 
-import type {CreateDeploymentInput, DeploymentId, DeploymentRepository, LinkAccountInput, LoginInput, SignupInput, UserId,} from '../../../shared';
-import {CoreService, InMemoryDeploymentRepository} from '../index.ts';
+import type {
+  CreateDeploymentInput,
+  DeploymentId,
+  DeploymentRepository,
+  LinkAccountInput,
+  LoginInput,
+  SignupInput,
+  UserId,
+} from '../shared/index.ts';
+import { CoreService, InMemoryDeploymentRepository } from './index.ts';
 
 function makeCore() {
   const repository: DeploymentRepository = new InMemoryDeploymentRepository();
   const core = new CoreService(repository);
-  return {core, repository};
+  return { core, repository };
 }
 
-async function createDeploymentForTesting(core: CoreService):
-    Promise<DeploymentId> {
+async function createDeploymentForTesting(core: CoreService): Promise<DeploymentId> {
   const input: CreateDeploymentInput = {
     customerId: 'test-customer',
     name: 'test-deployment',
@@ -27,7 +34,7 @@ async function createDeploymentForTesting(core: CoreService):
 
 describe('User authentication', () => {
   test('signup creates a new user with email and password', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const deploymentId = await createDeploymentForTesting(core);
 
     const input: SignupInput = {
@@ -47,7 +54,7 @@ describe('User authentication', () => {
   });
 
   test('signup throws if email already exists', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const deploymentId = await createDeploymentForTesting(core);
 
     const input: SignupInput = {
@@ -67,7 +74,7 @@ describe('User authentication', () => {
   });
 
   test('login returns user and token for valid credentials', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const deploymentId = await createDeploymentForTesting(core);
 
     const signupInput: SignupInput = {
@@ -84,7 +91,7 @@ describe('User authentication', () => {
       password: 'correct-password',
     };
 
-    const {user, token} = await core.login(loginInput);
+    const { user, token } = await core.login(loginInput);
 
     expect(user.email).toBe('user@example.com');
     expect(token.userId).toBe(user.id);
@@ -93,7 +100,7 @@ describe('User authentication', () => {
   });
 
   test('login throws for invalid email', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const deploymentId = await createDeploymentForTesting(core);
 
     const loginInput: LoginInput = {
@@ -111,7 +118,7 @@ describe('User authentication', () => {
   });
 
   test('getUser returns user by id', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const deploymentId = await createDeploymentForTesting(core);
 
     const signupInput: SignupInput = {
@@ -127,13 +134,13 @@ describe('User authentication', () => {
   });
 
   test('getUser returns null for unknown user', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const user = await core.getUser(crypto.randomUUID() as UserId);
     expect(user).toBeNull();
   });
 
   test('listUsers returns only users in the deployment', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const dep1 = await createDeploymentForTesting(core);
     const dep2 = await createDeploymentForTesting(core);
 
@@ -159,7 +166,7 @@ describe('User authentication', () => {
   });
 
   test('linkAccount adds a GitHub account to a user', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const deploymentId = await createDeploymentForTesting(core);
 
     const user = await core.signup({
@@ -178,14 +185,13 @@ describe('User authentication', () => {
     const updated = await core.linkAccount(user.id, linkInput);
 
     expect(updated.linkedAccounts).toHaveLength(2);
-    const githubAccount =
-        updated.linkedAccounts.find(la => la.provider === 'github');
+    const githubAccount = updated.linkedAccounts.find(la => la.provider === 'github');
     expect(githubAccount).toBeDefined();
     expect(githubAccount?.providerId).toBe('github-username');
   });
 
   test('linkAccount throws if already linked', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const deploymentId = await createDeploymentForTesting(core);
 
     const user = await core.signup({
@@ -210,7 +216,7 @@ describe('User authentication', () => {
   });
 
   test('unlinkAccount removes a provider from user', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const deploymentId = await createDeploymentForTesting(core);
 
     const user = await core.signup({
@@ -231,7 +237,7 @@ describe('User authentication', () => {
   });
 
   test('unlinkAccount throws if only one account remains', async () => {
-    const {core} = makeCore();
+    const { core } = makeCore();
     const deploymentId = await createDeploymentForTesting(core);
 
     const user = await core.signup({
