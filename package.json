@@ -25,6 +25,8 @@
     "@aws-sdk/client-rds": "^3.1085.0",
     "@aws-sdk/client-route-53": "^3.1085.0",
     "@aws-sdk/client-secrets-manager": "^3.1085.0",
+    "@types/bcrypt": "^6.0.0",
+    "bcrypt": "^6.0.0",
     "postgres": "^3.4.3"
   },
   "keywords": [

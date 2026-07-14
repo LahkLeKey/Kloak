@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+
 import type { CreateDeploymentInput } from './index.ts';
 import { CoreService, InMemoryDeploymentRepository } from './index.ts';
 

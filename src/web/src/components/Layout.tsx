@@ -9,6 +9,7 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const isRoot = location.pathname === '/';
+  const isDocs = location.pathname === '/docs';
 
   return (
     <div className={styles.shell}>
@@ -21,14 +22,9 @@ export function Layout({ children }: LayoutProps) {
           <Link to="/" className={isRoot ? styles.activeLink : styles.link}>
             Deployments
           </Link>
-          <a
-            href="https://kloak.net/docs"
-            className={styles.link}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <Link to="/docs" className={isDocs ? styles.activeLink : styles.link}>
             Docs
-          </a>
+          </Link>
         </nav>
       </header>
       <main className={styles.main}>{children}</main>

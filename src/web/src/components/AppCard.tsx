@@ -1,15 +1,37 @@
+import { useState } from 'react';
 import type { ExternalApp } from '../api';
 import styles from './AppCard.module.css';
 import { StatusBadge } from './StatusBadge';
 
 interface AppCardProps {
   app: ExternalApp;
-  onActivate?: (id: string) => void;
-  onSuspend?: (id: string) => void;
-  onRevoke?: (id: string) => void;
+  onActivate?: (id: string) => Promise<void>;
+  onSuspend?: (id: string) => Promise<void>;
+  onRevoke?: (id: string) => Promise<void>;
 }
 
 export function AppCard({ app, onActivate, onSuspend, onRevoke }: AppCardProps) {
+  const [copying, setCopying] = useState(false);
+  const [transitioningStatus, setTransitioningStatus] = useState<string | null>(null);
+
+  async function handleCopyClientId() {
+    await navigator.clipboard.writeText(app.clientId);
+    setCopying(true);
+    setTimeout(() => setCopying(false), 2000);
+  }
+
+  async function handleStatusChange(
+    newStatus: ExternalApp['status'],
+    handler?: (id: string) => Promise<void>
+  ) {
+    if (!handler) return;
+    setTransitioningStatus(newStatus);
+    try {
+      await handler(app.id);
+    } finally {
+      setTransitioningStatus(null);
+    }
+  }
   return (
     <div className={styles.card} data-testid="app-card">
       <div className={styles.header}>
@@ -25,7 +47,20 @@ export function AppCard({ app, onActivate, onSuspend, onRevoke }: AppCardProps) 
           <div className={styles.metaRow}>
             <dt>Client ID</dt>
             <dd>
-              <code className={styles.mono}>{app.clientId}</code>
+              <div className={styles.clientIdRow}>
+                <code className={styles.mono} title={app.clientId}>
+                  {app.clientId.length > 32 ? `${app.clientId.substring(0, 24)}…` : app.clientId}
+                </code>
+                <button
+                  type="button"
+                  className={styles.copyBtn}
+                  onClick={handleCopyClientId}
+                  title="Copy to clipboard"
+                  data-testid="copy-client-id-btn"
+                >
+                  {copying ? '✓' : '📋'}
+                </button>
+              </div>
             </dd>
           </div>
           <div className={styles.metaRow}>
@@ -70,30 +105,33 @@ export function AppCard({ app, onActivate, onSuspend, onRevoke }: AppCardProps) 
           <button
             type="button"
             className={styles.btnPrimary}
-            onClick={() => onActivate(app.id)}
+            onClick={() => handleStatusChange('active', onActivate)}
+            disabled={transitioningStatus === 'active'}
             data-testid="activate-btn"
           >
-            Activate
+            {transitioningStatus === 'active' ? 'Activating…' : 'Activate'}
           </button>
         )}
         {app.status === 'active' && onSuspend && (
           <button
             type="button"
             className={styles.btnWarning}
-            onClick={() => onSuspend(app.id)}
+            onClick={() => handleStatusChange('suspended', onSuspend)}
+            disabled={transitioningStatus === 'suspended'}
             data-testid="suspend-btn"
           >
-            Suspend
+            {transitioningStatus === 'suspended' ? 'Suspending…' : 'Suspend'}
           </button>
         )}
         {(app.status === 'active' || app.status === 'suspended') && onRevoke && (
           <button
             type="button"
             className={styles.btnDanger}
-            onClick={() => onRevoke(app.id)}
+            onClick={() => handleStatusChange('revoked', onRevoke)}
+            disabled={transitioningStatus === 'revoked'}
             data-testid="revoke-btn"
           >
-            Revoke
+            {transitioningStatus === 'revoked' ? 'Revoking…' : 'Revoke'}
           </button>
         )}
       </div>

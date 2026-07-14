@@ -63,6 +63,39 @@
   color: var(--color-text);
 }
 
+.clientIdRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.copyBtn {
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  cursor: pointer;
+  color: var(--color-muted);
+  font-size: 12px;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.copyBtn:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.copyBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .mono {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -130,8 +163,15 @@
   border: 1px solid var(--color-danger);
 }
 
-.btnPrimary:hover,
-.btnWarning:hover,
-.btnDanger:hover {
+.btnPrimary:hover:not(:disabled),
+.btnWarning:hover:not(:disabled),
+.btnDanger:hover:not(:disabled) {
   opacity: 0.85;
+}
+
+.btnPrimary:disabled,
+.btnWarning:disabled,
+.btnDanger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

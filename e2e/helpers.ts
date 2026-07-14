@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import {expect, test} from '@playwright/test';
 
 /**
  * Shared test fixtures and helpers for Kloak e2e tests.
@@ -22,12 +22,12 @@ export interface CreatedApp {
 const API = 'http://localhost:3000';
 
 export async function createDeployment(
-  name: string,
-  customerId = 'test-customer',
-): Promise<CreatedDeployment> {
+    name: string,
+    customerId = 'test-customer',
+    ): Promise<CreatedDeployment> {
   const res = await fetch(`${API}/deployments`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({
       customerId,
       name,
@@ -44,13 +44,13 @@ export async function createDeployment(
 }
 
 export async function registerApp(
-  deploymentId: string,
-  name: string,
-  domain: string,
-): Promise<CreatedApp> {
+    deploymentId: string,
+    name: string,
+    domain: string,
+    ): Promise<CreatedApp> {
   const res = await fetch(`${API}/deployments/${deploymentId}/apps`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {'Content-Type': 'application/json'},
     body: JSON.stringify({
       name,
       description: `E2E test app for ${domain}`,
@@ -63,4 +63,4 @@ export async function registerApp(
   return res.json() as Promise<CreatedApp>;
 }
 
-export { expect, test };
+export {expect, test};
