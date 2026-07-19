@@ -219,6 +219,21 @@ const ROUTES: Array<{ method: HttpMethod; pattern: string }> = [
   { method: 'GET', pattern: '/deployments/:id' },
   { method: 'POST', pattern: '/deployments/:id/versions' },
   { method: 'PUT', pattern: '/deployments/:id/status' },
+  { method: 'POST', pattern: '/deployments/:id/apps' },
+  { method: 'GET', pattern: '/deployments/:id/apps' },
+  { method: 'GET', pattern: '/apps/:appId' },
+  { method: 'PUT', pattern: '/apps/:appId/status' },
+  { method: 'POST', pattern: '/deployments/:id/flows' },
+  { method: 'GET', pattern: '/deployments/:id/flows' },
+  { method: 'GET', pattern: '/flows/:flowId' },
+  { method: 'POST', pattern: '/auth/signup' },
+  { method: 'POST', pattern: '/auth/login' },
+  { method: 'GET', pattern: '/users/:userId' },
+  { method: 'GET', pattern: '/deployments/:id/users' },
+  { method: 'POST', pattern: '/users/:userId/link-account' },
+  { method: 'DELETE', pattern: '/users/:userId/link-account/:provider' },
+  { method: 'POST', pattern: '/oauth/authorize/:provider' },
+  { method: 'POST', pattern: '/oauth/callback/:provider' },
 ];
 
 export async function nodeHttpAdapter(

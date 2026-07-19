@@ -57,6 +57,8 @@ export function DeploymentDetailPage() {
   }
 
   async function handleRevoke(appId: string) {
+    const previous = apps.find(a => a.id === appId)?.status;
+
     // Optimistic update
     setApps(prev => prev.map(a => (a.id === appId ? { ...a, status: 'revoked' as const } : a)));
     try {
@@ -64,7 +66,9 @@ export function DeploymentDetailPage() {
       setApps(prev => prev.map(a => (a.id === appId ? updated : a)));
     } catch (_e) {
       // Revert optimistic update
-      setApps(prev => prev.map(a => (a.id === appId ? { ...a, status: 'active' as const } : a)));
+      if (previous) {
+        setApps(prev => prev.map(a => (a.id === appId ? { ...a, status: previous } : a)));
+      }
     }
   }
 

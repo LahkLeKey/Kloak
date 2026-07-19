@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './SignupPage.module.css';
 
 interface SignupForm {
+  deploymentId: string;
   email: string;
   password: string;
   confirmPassword: string;
@@ -12,6 +13,7 @@ interface SignupForm {
 export function SignupPage() {
   const navigate = useNavigate();
   const [form, setForm] = useState<SignupForm>({
+    deploymentId: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -47,6 +49,7 @@ export function SignupPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          deploymentId: form.deploymentId,
           email: form.email,
           password: form.password,
           displayName: form.displayName || undefined,
@@ -58,15 +61,15 @@ export function SignupPage() {
         throw new Error(body || 'Signup failed');
       }
 
-      const { user, token } = (await response.json()) as {
-        user: { id: string; email: string; deploymentId: string };
-        token: string;
+      const user = (await response.json()) as {
+        id: string;
+        email: string;
+        deploymentId: string;
       };
 
-      localStorage.setItem('authToken', token);
       localStorage.setItem('userId', user.id);
       localStorage.setItem('deploymentId', user.deploymentId);
-      navigate('/account');
+      navigate('/auth/login');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error occurred');
     } finally {
@@ -81,6 +84,20 @@ export function SignupPage() {
         <p className={styles.subtitle}>Join Kloak and manage your identity</p>
 
         <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formGroup}>
+            <label htmlFor="deploymentId">Deployment ID</label>
+            <input
+              id="deploymentId"
+              name="deploymentId"
+              type="text"
+              value={form.deploymentId}
+              onChange={handleChange}
+              placeholder="deployment-123"
+              required
+              disabled={loading}
+            />
+          </div>
+
           <div className={styles.formGroup}>
             <label htmlFor="email">Email</label>
             <input

@@ -76,6 +76,8 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error((err as { error: string }).error ?? res.statusText);
   }
+
+  // DELETE endpoints return 204 with no JSON body.
   return (res.status === 204 ? undefined : await res.json()) as T;
 }
 

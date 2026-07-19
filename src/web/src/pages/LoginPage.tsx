@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import styles from './LoginPage.module.css';
 
 interface LoginForm {
+  deploymentId: string;
   email: string;
   password: string;
 }
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const [form, setForm] = useState<LoginForm>({ email: '', password: '' });
+  const [form, setForm] = useState<LoginForm>({ deploymentId: '', email: '', password: '' });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -59,6 +60,20 @@ export function LoginPage() {
         <p className={styles.subtitle}>Sign in to your Kloak account</p>
 
         <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.formGroup}>
+            <label htmlFor="deploymentId">Deployment ID</label>
+            <input
+              id="deploymentId"
+              name="deploymentId"
+              type="text"
+              value={form.deploymentId}
+              onChange={handleChange}
+              placeholder="deployment-123"
+              required
+              disabled={loading}
+            />
+          </div>
+
           <div className={styles.formGroup}>
             <label htmlFor="email">Email</label>
             <input
