@@ -1,0 +1,304 @@
+.docsContainer {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 32px;
+  font-size: 13px;
+  color: var(--color-text-sub);
+}
+
+.breadcrumb a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.breadcrumb a:hover {
+  color: var(--color-primary-hover);
+}
+
+.article {
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+.hero {
+  margin-bottom: 48px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--color-text);
+}
+
+.subtitle {
+  font-size: 18px;
+  color: var(--color-text-sub);
+  margin: 0;
+}
+
+.section {
+  margin-bottom: 48px;
+}
+
+.section h2 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--color-text);
+  border-bottom: 2px solid var(--color-primary);
+  padding-bottom: 8px;
+}
+
+.section p {
+  margin-bottom: 16px;
+  font-size: 15px;
+}
+
+.section ul {
+  margin: 12px 0 12px 20px;
+  padding: 0;
+  list-style: disc;
+}
+
+.section li {
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.problemGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.problemCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.problemCard h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--color-text);
+}
+
+.problemCard p {
+  font-size: 14px;
+  color: var(--color-text-sub);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin: 24px 0;
+}
+
+.step {
+  display: flex;
+  gap: 20px;
+}
+
+.stepNumber {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.step h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--color-text);
+}
+
+.step p {
+  font-size: 15px;
+  margin: 0 0 12px 0;
+}
+
+.substeps {
+  margin: 12px 0 0 20px;
+  padding: 0;
+  list-style: circle;
+}
+
+.substeps li {
+  margin-bottom: 6px;
+  font-size: 14px;
+  color: var(--color-text-sub);
+}
+
+.conceptGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin: 24px 0;
+}
+
+.concept {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.concept h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--color-primary);
+}
+
+.concept p {
+  font-size: 14px;
+  color: var(--color-text-sub);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.useCaseList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 24px 0;
+}
+
+.useCase {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-primary);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.useCase h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--color-text);
+}
+
+.useCase p {
+  font-size: 14px;
+  color: var(--color-text-sub);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.nextSteps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin: 24px 0;
+}
+
+.nextStepItem {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.nextStepItem strong {
+  display: block;
+  font-size: 15px;
+  color: var(--color-text);
+  margin-bottom: 8px;
+}
+
+.nextStepItem p {
+  font-size: 14px;
+  color: var(--color-text-sub);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.faqList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 24px 0;
+}
+
+.faqItem {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.faqItem h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: var(--color-text);
+}
+
+.faqItem p {
+  font-size: 14px;
+  color: var(--color-text-sub);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.inlineLink {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 0.15s;
+  font-weight: 500;
+}
+
+.inlineLink:hover {
+  color: var(--color-primary-hover);
+  text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .title {
+    font-size: 24px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+  }
+
+  .section h2 {
+    font-size: 20px;
+  }
+
+  .stepNumber {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  .step {
+    gap: 12px;
+  }
+}

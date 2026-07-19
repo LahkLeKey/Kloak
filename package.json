@@ -4,18 +4,29 @@
   "type": "module",
   "description": "Opinionated auth appliance for Keycloak deployments",
   "engines": {
-    "node": ">=25.0.0"
+    "node": ">=25.0.0",
+    "bun": ">=1.0.0"
   },
   "scripts": {
-    "test": "node --experimental-transform-types --test src/**/*.test.ts",
-    "dev": "PORT=3000 node --experimental-transform-types src/admin-ui/cli.ts",
-    "migrate": "node --experimental-transform-types src/database/migrate.ts"
+    "test": "bun test src/",
+    "test:e2e": "bunx playwright test",
+    "dev": "bun run src/admin-ui/cli.ts",
+    "dev:watch": "bun --watch run src/admin-ui/cli.ts",
+    "web": "bun run --cwd src/web dev",
+    "storybook": "bun run --cwd src/web storybook",
+    "lint": "biome check --write src/",
+    "lint:check": "biome check src/",
+    "format": "biome format --write src/",
+    "format:check": "biome format --check src/",
+    "migrate": "bun run src/database/migrate.ts"
   },
   "dependencies": {
     "@aws-sdk/client-elastic-load-balancing-v2": "^3.1085.0",
     "@aws-sdk/client-rds": "^3.1085.0",
     "@aws-sdk/client-route-53": "^3.1085.0",
     "@aws-sdk/client-secrets-manager": "^3.1085.0",
+    "@types/bcrypt": "^6.0.0",
+    "bcrypt": "^6.0.0",
     "postgres": "^3.4.3"
   },
   "keywords": [
@@ -23,5 +34,10 @@
     "auth",
     "deployment",
     "infrastructure"
-  ]
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.3",
+    "@playwright/test": "^1.61.1",
+    "@types/node": "^26.1.1"
+  }
 }

@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: production
+      target: development  # Use development stage for docker-compose (includes bun --watch)
     container_name: kloak
     ports:
       - "3000:3000"
@@ -22,18 +22,14 @@ services:
       AWS_REGION: "us-east-1"
       AWS_ACCESS_KEY_ID: "test"
       AWS_SECRET_ACCESS_KEY: "test"
+    volumes:
+      - ./src:/app/src  # Mount source for live reload
     depends_on:
       postgres:
         condition: service_healthy
       keycloak:
         condition: service_healthy
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"]
-      interval: 30s
-      timeout: 3s
-      retries: 3
-      start_period: 40s
 
   postgres:
     image: postgres:15-alpine

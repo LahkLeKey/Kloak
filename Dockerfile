@@ -1,55 +1,70 @@
-# Multi-stage build for Node.js app with --experimental-transform-types
+# Multi-stage build for Bun app with TypeScript
 
 # Stage 1: Dependencies
-FROM node:25.2.1-alpine AS deps
+FROM oven/bun:latest AS deps
 WORKDIR /app
 
 # Copy package files
-COPY package.json package-lock.json ./
+COPY package.json bun.lockb* ./
 
 # Install dependencies
-RUN npm ci
+RUN bun install --frozen-lockfile
 
 # Stage 2: Build and test
-FROM node:25.2.1-alpine AS test
+FROM oven/bun:latest AS test
 WORKDIR /app
 
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/bun.lockb ./
 
-# Copy source code
-COPY . .
-
-# Run tests to verify build
-RUN npm test
-
-# Stage 3: Production image
-FROM node:25.2.1-alpine AS production
-WORKDIR /app
-
-# Install dumb-init to handle signals properly
-RUN apk add --no-cache dumb-init
-
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/package.json /app/package-lock.json ./
-
-# Copy source code
+# Copy package and source code
+COPY package.json ./
 COPY src ./src
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
-USER nodejs
+# Run tests to verify build
+RUN bun test
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})" || exit 1
+# Stage 3: Development image
+FROM oven/bun:latest AS development
+WORKDIR /app
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/bun.lockb ./
+
+# Copy package and source code
+COPY package.json ./
+COPY src ./src
 
 # Expose port
 EXPOSE 3000
 
-# Use dumb-init to handle SIGTERM properly
-ENTRYPOINT ["dumb-init", "--"]
+# Start server with watch mode
+CMD ["bun", "--watch", "run", "src/admin-ui/cli.ts"]
 
-# Start server with experimental transform types
-CMD ["node", "--experimental-transform-types", "src/admin-ui/cli.ts"]
+# Stage 4: Production image
+FROM oven/bun:latest AS production
+WORKDIR /app
+
+# Copy dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/bun.lockb ./
+
+# Copy package and source code
+COPY package.json ./
+COPY src ./src
+
+# Create non-root user for security
+RUN useradd -m -u 1001 bunapp
+USER bunapp
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD bun -e "const res = await fetch('http://localhost:3000/health'); if (res.status !== 200) throw new Error(res.status);"
+
+# Expose port
+EXPOSE 3000
+
+# Start server
+CMD ["bun", "run", "src/admin-ui/cli.ts"]

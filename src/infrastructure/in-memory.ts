@@ -1,4 +1,4 @@
-import type {InfrastructureService, ProvisioningPlan, ProvisioningResult} from './index';
+import type { InfrastructureService, ProvisioningPlan, ProvisioningResult } from './index';
 
 export class InMemoryInfrastructureService implements InfrastructureService {
   private readonly provisionedPlans: ProvisioningPlan[] = [];
@@ -28,23 +28,19 @@ function buildExternalReferences(plan: ProvisioningPlan) {
   const externalReferences: Record<string, string> = {};
 
   if (plan.createDatabase) {
-    externalReferences.database =
-        `${plan.target.accountId}/${plan.target.projectId}/database`;
+    externalReferences.database = `${plan.target.accountId}/${plan.target.projectId}/database`;
   }
 
   if (plan.createIngress) {
-    externalReferences.ingress =
-        `${plan.target.accountId}/${plan.target.projectId}/ingress`;
+    externalReferences.ingress = `${plan.target.accountId}/${plan.target.projectId}/ingress`;
   }
 
   if (plan.createDns) {
-    externalReferences.dns =
-        `${plan.target.accountId}/${plan.target.projectId}/dns`;
+    externalReferences.dns = `${plan.target.accountId}/${plan.target.projectId}/dns`;
   }
 
   if (plan.createSecrets) {
-    externalReferences.secrets =
-        `${plan.target.accountId}/${plan.target.projectId}/secrets`;
+    externalReferences.secrets = `${plan.target.accountId}/${plan.target.projectId}/secrets`;
   }
 
   return externalReferences;

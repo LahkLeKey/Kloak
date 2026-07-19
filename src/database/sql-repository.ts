@@ -1,18 +1,14 @@
 import postgres from 'postgres';
+import type { DeploymentRepository } from '../core/index.ts';
 import type {
   AuditEvent,
-  CustomerId,
   Deployment,
   DeploymentId,
-  DeploymentStatus,
   DeploymentVersion,
   DeploymentVersionId,
   DesiredStateSnapshot,
-  ProvisioningReferences,
-  ProvisioningTarget,
   ReconciliationRun,
 } from '../shared/index.ts';
-import type {DeploymentRepository} from '../core/index.ts';
 
 export interface SqlRepositoryConfig {
   readonly connectionString: string;
@@ -41,9 +37,7 @@ export class SqlDeploymentRepository implements DeploymentRepository {
     return rows;
   }
 
-  async listDeploymentVersions(
-    deploymentId: DeploymentId,
-  ): Promise<readonly DeploymentVersion[]> {
+  async listDeploymentVersions(deploymentId: DeploymentId): Promise<readonly DeploymentVersion[]> {
     const rows = await this.sql<DeploymentVersion[]>`
       SELECT
         id,
@@ -59,7 +53,7 @@ export class SqlDeploymentRepository implements DeploymentRepository {
     return rows;
   }
 
-  async getDeployment(deploymentId: DeploymentId): Promise<Deployment|null> {
+  async getDeployment(deploymentId: DeploymentId): Promise<Deployment | null> {
     const rows = await this.sql<Deployment[]>`
       SELECT
         id,
@@ -75,9 +69,7 @@ export class SqlDeploymentRepository implements DeploymentRepository {
     return rows[0] ?? null;
   }
 
-  async getDesiredState(
-    versionId: DeploymentVersionId,
-  ): Promise<DesiredStateSnapshot|null> {
+  async getDesiredState(versionId: DeploymentVersionId): Promise<DesiredStateSnapshot | null> {
     const rows = await this.sql<DesiredStateSnapshot[]>`
       SELECT
         id,

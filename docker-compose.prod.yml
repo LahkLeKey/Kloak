@@ -1,0 +1,21 @@
+# Production override for docker-compose
+# Use with: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
+
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production  # Use production stage
+    environment:
+      NODE_ENV: "production"
+    volumes: []  # No volume mounts in production
+    restart: always
+    healthcheck:
+      test: ['CMD', 'bun', '-e', "const res = await fetch('http://localhost:3000/health'); if (res.status !== 200) throw new Error(res.status);"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 40s
